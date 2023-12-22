@@ -18,7 +18,7 @@ import Typography from "@mui/material/Typography";
 import Close from "@mui/icons-material/Close";
 import Edit from "@mui/icons-material/Edit";
 
-import { ICourier, IDevice, IDeviceCreate, Nullable } from "../../interfaces";
+import { IDevice, IDeviceCreate, Nullable } from "../../interfaces";
 import { useModalForm } from "@refinedev/react-hook-form";
 import { CreateDevice } from "./create";
 
@@ -39,7 +39,7 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
     modal: { show: showCreateModal },
   } = createModalFormProps;
 
-  const { dataGridProps } = useDataGrid<ICourier>({
+  const { dataGridProps } = useDataGrid<IDevice>({
     initialPageSize: 10,
     initialSorter: [
       {
@@ -111,6 +111,8 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
           columns={columns}
           getRowId={(row) => row.device_id}
           autoHeight
+          checkboxSelection
+          disableRowSelectionOnClick
           pageSizeOptions={[10, 20, 50, 100]}
           density="comfortable"
           sx={{

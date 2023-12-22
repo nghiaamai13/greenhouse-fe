@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridColDef,
-  GridToolbar,
-} from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridColDef } from "@mui/x-data-grid";
 import {
   HttpError,
   IResourceComponentsProps,
@@ -12,6 +7,7 @@ import {
   useCustomMutation,
   useDeleteMany,
   useInvalidate,
+  useNavigation,
   usePermissions,
 } from "@refinedev/core";
 import {
@@ -44,6 +40,7 @@ import {
   Link,
   FormControl,
   Autocomplete,
+  Typography,
 } from "@mui/material";
 import { EditFarm } from "./edit";
 
@@ -52,6 +49,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
   const [isAssignDialogOpen, setAssignDialogOpen] = React.useState(false);
   const { mutate } = useCustomMutation<IFarm>();
   const { data: role } = usePermissions();
+  const { show } = useNavigation();
   const apiUrl = useApiUrl();
 
   const {
@@ -105,15 +103,10 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
         headerName: "Customer",
         flex: 1,
         maxWidth: 200,
-        valueGetter: ({ value }) => value.username,
+        valueGetter: ({ value }) => value?.username,
         renderCell: function render({ row }) {
           return (
             <Box
-              onClick={() => {
-                if (row.customer?.user_id !== undefined) {
-                  console.log(row.customer.user_id);
-                }
-              }}
               sx={{
                 width: "100%",
                 height: "100%",
@@ -122,7 +115,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
                 justifyContent: "left",
               }}
             >
-              <Link>{row.customer?.username}</Link>
+              <Typography>{row.customer?.username}</Typography>
             </Box>
           );
         },
@@ -263,6 +256,10 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
               "& .MuiDataGrid-cell:hover": {
                 cursor: "pointer",
               },
+            }}
+            onRowClick={(row) => {
+              console.log(row.id);
+              show("farms", row.id);
             }}
           />
         </List>

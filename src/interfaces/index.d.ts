@@ -1,20 +1,8 @@
-export interface IUser {
-  id: number;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  gender: string;
-  gsm: string;
-  createdAt: string;
-  isActive: boolean;
-  avatar: IFile[];
-  addresses: IAddress[];
-}
-
 export interface IIdentity {
   id: number;
   name: string;
   avatar: string;
+  scope: string;
 }
 
 export interface ICustomerCreate {
@@ -55,24 +43,6 @@ export interface IDeviceProfile {
   created_at: string;
 }
 
-export interface IProduct {
-  id: number;
-  name: string;
-  isActive: boolean;
-  description: string;
-  images: IFile[];
-  createdAt: string;
-  price: number;
-  category: ICategory;
-  stock: number;
-}
-
-export interface ICategory {
-  id: number;
-  title: string;
-  isActive: boolean;
-}
-
 export interface ICustomer {
   user_id: string;
   username: string;
@@ -81,15 +51,20 @@ export interface ICustomer {
   role: string;
 }
 
-export interface ICourier {
-  id: number;
-  name: string;
-  surname: string;
-  gender: string;
-  gsm: string;
-  createdAt: string;
-  isActive: boolean;
-  avatar: IFile[];
+export interface IThreshold {
+  farm_id: string;
+  key: string;
+  threshold_max: number;
+  threshold_min: number;
+  modified_by: string;
+  modified_at: string;
+  threshold_id: string;
+}
+
+export interface ITelemetry {
+  key: string;
+  value: number;
+  timestamp: string;
 }
 
 export type Nullable<T> = {

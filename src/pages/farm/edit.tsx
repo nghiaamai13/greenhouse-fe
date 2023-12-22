@@ -31,7 +31,6 @@ export const EditFarm: React.FC<
   modal: { visible, close },
   saveButtonProps,
   control,
-  getValues,
 }) => {
   const { autocompleteProps } = useAutocomplete<ICustomer>({
     resource: "customers",
@@ -86,9 +85,6 @@ export const EditFarm: React.FC<
                     })}
                     style={{ height: "40px" }}
                   />
-                  {errors.name && (
-                    <FormHelperText error>{errors.name.message}</FormHelperText>
-                  )}
                 </FormControl>
                 <FormControl>
                   <FormLabel required>Description</FormLabel>
@@ -98,34 +94,28 @@ export const EditFarm: React.FC<
                       required: "Description is required",
                     })}
                     multiline
-                    minRows={5}
+                    minRows={3}
                     maxRows={5}
                   />
-                  {errors.descriptions && (
-                    <FormHelperText error>
-                      {errors.descriptions.message}
-                    </FormHelperText>
-                  )}
                 </FormControl>
                 <FormControl>
                   <Controller
                     control={control}
-                    name="assigned_customer"
+                    name="customer"
+                    defaultValue={null as any}
                     render={({ field }) => (
-                      //@ts-ignore
                       <Autocomplete
                         disablePortal
                         {...autocompleteProps}
                         {...field}
                         onChange={(_, value) => {
-                          console.log(value?.user_id);
-                          field.onChange(value?.user_id);
+                          field.onChange(value);
                         }}
                         getOptionLabel={(item) => {
                           return item.username
                             ? item.username
                             : autocompleteProps?.options?.find(
-                                (p) => p.user_id === item.toString()
+                                (p) => p.user_id.toString() === item.toString()
                               )?.username ?? "";
                         }}
                         isOptionEqualToValue={(option, value) =>
@@ -142,11 +132,6 @@ export const EditFarm: React.FC<
                       />
                     )}
                   />
-                  {errors.assigned_customer && (
-                    <FormHelperText error>
-                      {errors.assigned_customer.message}
-                    </FormHelperText>
-                  )}
                 </FormControl>
               </Stack>
             </form>

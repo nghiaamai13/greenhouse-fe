@@ -17,7 +17,6 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router-v6";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import DevicesOtherOutlinedIcon from "@mui/icons-material/DevicesOtherOutlined";
 import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
 import CategoryOutlined from "@mui/icons-material/CategoryOutlined";
 import StoreOutlined from "@mui/icons-material/StoreOutlined";
@@ -32,16 +31,29 @@ import { ColorModeContextProvider } from "./contexts";
 import { Header, Title } from "./components";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { FarmList } from "./pages/farm/list";
-import { DeviceList } from "./pages/device/list";
-import { DeviceProfileList } from "./pages/deviceProfile/list";
-import { CustomerList } from "./pages/customer/list";
+import { FarmList, FarmShow } from "./pages/farm";
+import { DeviceList } from "./pages/device";
+import { DeviceProfileList } from "./pages/deviceProfile";
+import { CustomerList } from "./pages/customer";
 
 const API_URL = "http://localhost:8000/api";
 
 const App: React.FC = () => {
   const [customerResources, setCustomerResources] = useState<boolean>(false);
   const [scope, setScope] = useState(localStorage.getItem("currentUserScope"));
+  //@ts-ignore
+  const customTitleHandler = ({ resource }) => {
+    let title = "Greenhouse";
+
+    if (resource) {
+      title = `Greenhouse | ${
+        resource.name.charAt(0).toUpperCase() + resource.name.slice(1)
+      }`;
+      title = title.replace("_", " ");
+    }
+
+    return title;
+  };
 
   useEffect(() => {
     const handleScopeUpdate = () => {
@@ -113,12 +125,13 @@ const App: React.FC = () => {
                 },
                 {
                   name: "farms",
-                  list: FarmList,
+                  list: "/farms",
+                  show: "/farms/:id",
                   meta: { icon: <StoreOutlined /> },
                 },
                 {
                   name: "device_profiles",
-                  list: DeviceProfileList,
+                  list: "/device_profiles",
                   meta: {
                     icon: <CategoryOutlined />,
                     label: "Device Profiles",
@@ -126,12 +139,12 @@ const App: React.FC = () => {
                 },
                 {
                   name: "devices",
-                  list: DeviceList,
+                  list: "/devices",
                   meta: { icon: <DeviceThermostatIcon /> },
                 },
                 {
                   name: "customers",
-                  list: CustomerList,
+                  list: "/customers",
                   meta: {
                     icon: <PeopleOutlineOutlined />,
                     hide: customerResources,
@@ -163,6 +176,7 @@ const App: React.FC = () => {
                   </Route>
                   <Route path="farms">
                     <Route index element={<FarmList />} />
+                    <Route path=":id" element={<FarmShow />} />
                   </Route>
                   <Route path="device_profiles">
                     <Route index element={<DeviceProfileList />} />
@@ -187,7 +201,11 @@ const App: React.FC = () => {
                 </Route>
               </Routes>
               <UnsavedChangesNotifier />
-              <DocumentTitleHandler />
+
+              <DocumentTitleHandler
+                /*@ts-ignore*/
+                handler={customTitleHandler}
+              />
             </Refine>
           </RefineSnackbarProvider>
         </ColorModeContextProvider>
