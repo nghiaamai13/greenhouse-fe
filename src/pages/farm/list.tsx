@@ -5,6 +5,7 @@ import {
   IResourceComponentsProps,
   useApiUrl,
   useCustomMutation,
+  useDelete,
   useDeleteMany,
   useInvalidate,
   useNavigation,
@@ -23,7 +24,7 @@ import Paper from "@mui/material/Paper";
 
 import { CreateButton } from "@refinedev/mui";
 
-import Edit from "@mui/icons-material/Edit";
+import { Edit, Close } from "@mui/icons-material";
 import { ICustomer, IFarm, Nullable } from "../../interfaces";
 import { useModalForm, useForm } from "@refinedev/react-hook-form";
 import { Controller } from "react-hook-form";
@@ -37,7 +38,6 @@ import {
   DialogTitle,
   Stack,
   TextField,
-  Link,
   FormControl,
   Autocomplete,
   Typography,
@@ -46,6 +46,8 @@ import { EditFarm } from "./edit";
 
 export const FarmList: React.FC<IResourceComponentsProps> = () => {
   const { mutate: mutateDelete } = useDeleteMany<IFarm>();
+  const { mutate: mutateDeleteOne } = useDelete<IFarm>();
+
   const [isAssignDialogOpen, setAssignDialogOpen] = React.useState(false);
   const { mutate } = useCustomMutation<IFarm>();
   const { data: role } = usePermissions();
@@ -130,8 +132,18 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
               key={1}
               label="Edit"
               icon={<Edit color="success" />}
+              onClick={() => showEditDrawer(row.farm_id)}
+              showInMenu
+            />,
+            <GridActionsCellItem
+              key={2}
+              label="Delete"
+              icon={<Close color="error" />}
               onClick={() => {
-                showEditDrawer(row.farm_id);
+                mutateDeleteOne({
+                  resource: "farms",
+                  id: row.farm_id,
+                });
               }}
               showInMenu
             />,

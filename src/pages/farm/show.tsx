@@ -134,12 +134,8 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
 
   return (
     <>
-      {role === "tenant" && (
-        <>
-          <EditFarm {...editDrawerFormProps} />
-        </>
-      )}
       <Show
+        isLoading={thresholdIsLoading || keyIsLoading || telemetryIsLoading}
         breadcrumb={<Breadcrumb />}
         title={
           <Box>
@@ -184,24 +180,6 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                     color="primary"
                   >
                     View Dashboard
-                  </Button>
-                  {role === "tenant" && (
-                    <EditButton
-                      sx={{ marginRight: "8px" }}
-                      variant="contained"
-                      color="info"
-                      onClick={() => showEditDrawer(farm_data?.farm_id)}
-                    >
-                      Edit
-                    </EditButton>
-                  )}
-
-                  <Button
-                    sx={{ marginRight: "8px" }}
-                    variant="contained"
-                    color="error"
-                  >
-                    Delete
                   </Button>
                 </Box>
                 <Box mt={2}>

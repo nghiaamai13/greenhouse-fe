@@ -109,7 +109,7 @@ export const CreateFarm: React.FC<
                 <FormControl>
                   <Controller
                     control={control}
-                    name="assigned_customer"
+                    name="customer"
                     render={({ field }) => (
                       //@ts-ignore
                       <Autocomplete
@@ -117,8 +117,7 @@ export const CreateFarm: React.FC<
                         {...autocompleteProps}
                         {...field}
                         onChange={(_, value) => {
-                          console.log(value?.user_id);
-                          field.onChange(value?.user_id);
+                          field.onChange(value);
                         }}
                         getOptionLabel={(item) => {
                           return item.username ? item.username : "";
