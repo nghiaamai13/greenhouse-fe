@@ -61,6 +61,11 @@ export interface IThreshold {
   threshold_id: string;
 }
 
+export interface IThresholdAdd {
+  key: string;
+  threshold_max: number;
+  threshold_min: number;
+}
 export interface ITelemetry {
   key: string;
   value: number;

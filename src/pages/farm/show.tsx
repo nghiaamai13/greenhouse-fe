@@ -12,44 +12,87 @@ import {
   TextField,
   Stack,
   IconButton,
+  Autocomplete,
+  FormControl,
+  DialogTitle,
+  Dialog,
+  DialogContent,
 } from "@mui/material";
 import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
 import {
   HttpError,
   useApiUrl,
   useCustom,
+  useCustomMutation,
   useParsed,
-  usePermissions,
   useShow,
 } from "@refinedev/core";
+import { useForm } from "@refinedev/react-hook-form";
+
 import { IResourceComponentsProps } from "@refinedev/core/dist/contexts/resource";
 import React, { useState } from "react";
 
-import { IFarm, ITelemetry, IThreshold, Nullable } from "../../interfaces";
 import {
-  Breadcrumb,
-  CreateButton,
-  DateField,
-  EditButton,
-  Show,
-} from "@refinedev/mui";
+  IFarm,
+  ITelemetry,
+  IThreshold,
+  IThresholdAdd,
+  Nullable,
+} from "../../interfaces";
+import { Breadcrumb, CreateButton, DateField, Show } from "@refinedev/mui";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useModalForm } from "@refinedev/react-hook-form";
-import { EditFarm } from "./edit";
+import { Controller } from "react-hook-form";
+import FarmDeviceTable from "../../components/farm/deviceTable";
+
 export const FarmShow: React.FC<IResourceComponentsProps> = () => {
   const { id } = useParsed();
-  const { data: role } = usePermissions();
   const apiUrl = useApiUrl();
   const [activeTab, setActiveTab] = useState("1");
   const [copiedId, setCopiedId] = useState(false);
   const queryClient = useQueryClient();
 
-  const handleTabChange = (
-    event: React.SyntheticEvent,
-    newTabIndex: string
-  ) => {
-    setActiveTab(newTabIndex);
+  const [thresholdAddOpen, setThresholdAddOpen] = React.useState(false);
+  const handleOpenThresholdAdd = () => setThresholdAddOpen(true);
+  const handleCloseThresholdAdd = () => {
+    setThresholdAddOpen(false);
+    reset();
   };
+
+  const { mutate: mutateAddThreshold } = useCustomMutation<IThreshold>();
+
+  const handleSubmitThresholdAdd = (data: any) => {
+    const parsedData = {
+      ...data,
+      threshold_min: parseFloat(data.threshold_min),
+      threshold_max: parseFloat(data.threshold_max),
+    };
+
+    console.log("Form Data:", parsedData);
+    mutateAddThreshold(
+      {
+        url: `${apiUrl}/farms/${id}/threshold/${data.key}`,
+        method: "post",
+        values: parsedData,
+      },
+      {
+        onError: (error, variables, context) => {
+          console.log("Error Adding Threshold: ", error);
+        },
+        onSuccess: (data, variables, context) => {
+          queryClient.invalidateQueries({ queryKey: ["farm_thresholds"] });
+          handleCloseThresholdAdd();
+        },
+      }
+    );
+  };
+
+  const {
+    register,
+    control,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm<IThresholdAdd, HttpError, Nullable<IThresholdAdd>>();
 
   const {
     queryResult: { data: farm },
@@ -74,15 +117,17 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
     useCustom<IThreshold>({
       url: `${apiUrl}/farms/${id}/thresholds`,
       method: "get",
+      queryOptions: {
+        queryKey: ["farm_thresholds"],
+      },
     });
 
-  const editDrawerFormProps = useModalForm<IFarm, HttpError, Nullable<IFarm>>({
-    refineCoreProps: { action: "edit", resource: "farms", redirect: false },
-  });
-
-  const {
-    modal: { show: showEditDrawer },
-  } = editDrawerFormProps;
+  const handleTabChange = (
+    event: React.SyntheticEvent,
+    newTabIndex: string
+  ) => {
+    setActiveTab(newTabIndex);
+  };
 
   const thresholdColumns = React.useMemo<GridColDef<IThreshold>[]>(
     () => [
@@ -157,6 +202,7 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                   <Tab label="Details" value="1" />
                   <Tab label="Thresholds" value="2" />
                   <Tab label="Telemetry" value="3" />
+                  <Tab label="Dashboard" value="4" />
                 </TabList>
               </Box>
               {/* TABS */}
@@ -235,7 +281,12 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
               <TabPanel value="2">
                 <Stack>
                   <Stack direction={"row"} marginBottom="8px">
-                    <CreateButton variant="contained">Add</CreateButton>
+                    <CreateButton
+                      onClick={handleOpenThresholdAdd}
+                      variant="contained"
+                    >
+                      Add
+                    </CreateButton>
                   </Stack>
 
                   <DataGrid
@@ -243,9 +294,11 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                     rows={
                       (threshholds_data?.data || []) as readonly IThreshold[]
                     }
+                    checkboxSelection
                     getRowId={(row) => row.threshold_id}
                     columns={thresholdColumns}
                     autoHeight
+                    disableRowSelectionOnClick
                     pageSizeOptions={[10, 25, 50, 100]}
                     density="standard"
                     sx={{
@@ -287,9 +340,104 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                   }}
                 />
               </TabPanel>
+              <TabPanel value="4">
+                Dashboard
+                <FarmDeviceTable
+                  apiUrl={apiUrl}
+                  farm_id={farm_data?.farm_id || ""}
+                />
+              </TabPanel>
             </TabContext>
           </List>
         </Paper>
+        {/*Add Threshold Forms*/}
+        <Dialog
+          open={thresholdAddOpen}
+          onClose={handleCloseThresholdAdd}
+          PaperProps={{ sx: { minWidth: 500 } }}
+        >
+          <DialogTitle>Add Threshold</DialogTitle>
+          <DialogContent>
+            <form onSubmit={handleSubmit(handleSubmitThresholdAdd)}>
+              <Stack gap="10px" marginTop="10px">
+                <FormControl>
+                  <Controller
+                    control={control}
+                    name="key"
+                    rules={{ required: "Please choose a key" }}
+                    render={({ field }) => (
+                      <Autocomplete
+                        disablePortal
+                        id="key_select"
+                        options={(key_data?.data || []) as readonly any[]}
+                        onChange={(_, value) => {
+                          field.onChange(value?.ts_key);
+                        }}
+                        isOptionEqualToValue={(option, value) =>
+                          value === undefined ||
+                          option?.ts_key === (value?.ts_key ?? value)
+                        }
+                        getOptionLabel={(option) => option.ts_key}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Key"
+                            margin="normal"
+                            variant="outlined"
+                            error={!!errors.key}
+                            helperText={errors.key?.message}
+                            required
+                          />
+                        )}
+                      />
+                    )}
+                  ></Controller>
+                </FormControl>
+                <FormControl sx={{ mb: 3 }}>
+                  <TextField
+                    id="min_value"
+                    {...register("threshold_min", {
+                      required: "This field is required",
+                      pattern: {
+                        value: /^-?\d+(\.\d+)?$/,
+                        message: "Please enter a valid number",
+                      },
+                    })}
+                    error={!!errors.threshold_min}
+                    helperText={errors.threshold_min?.message}
+                    margin="normal"
+                    fullWidth
+                    label="Min Value"
+                    name="threshold_min"
+                    autoFocus
+                  />
+                  <FormControl sx={{ mb: 1 }}>
+                    <TextField
+                      id="max_value"
+                      {...register("threshold_max", {
+                        required: "This field is required",
+                        pattern: {
+                          value: /^-?\d+(\.\d+)?$/,
+                          message: "Please enter a valid number",
+                        },
+                      })}
+                      error={!!errors.threshold_max}
+                      helperText={errors.threshold_max?.message}
+                      margin="normal"
+                      fullWidth
+                      label="Max Value"
+                      name="threshold_max"
+                      autoFocus
+                    />
+                  </FormControl>
+                </FormControl>
+              </Stack>
+              <Button type="submit" variant="contained">
+                Set
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
         {/* Copy to clipboard snackbar */}
         <Snackbar
           open={copiedId}
