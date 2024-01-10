@@ -1,6 +1,5 @@
 import React from "react";
-import axios from "axios";
-import { useTranslate, useApiUrl, HttpError } from "@refinedev/core";
+import { HttpError } from "@refinedev/core";
 import { UseModalFormReturnType } from "@refinedev/react-hook-form";
 import { Controller } from "react-hook-form";
 import { Edit, useAutocomplete } from "@refinedev/mui";
@@ -14,15 +13,15 @@ import IconButton from "@mui/material/IconButton";
 import FormControl from "@mui/material/FormControl";
 import Autocomplete from "@mui/material/Autocomplete";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import FormHelperText from "@mui/material/FormHelperText";
 import TextField from "@mui/material/TextField";
 
 import CloseOutlined from "@mui/icons-material/CloseOutlined";
 
-import { ICustomer, IFarm, Nullable } from "../../interfaces";
+import { IAssetCreate, IFarm, Nullable } from "../../interfaces";
+import { assetTypeOptions } from "./create";
 
-export const EditFarm: React.FC<
-  UseModalFormReturnType<IFarm, HttpError, Nullable<IFarm>>
+export const EditAsset: React.FC<
+  UseModalFormReturnType<IAssetCreate, HttpError, Nullable<IAssetCreate>>
 > = ({
   register,
   formState: { errors },
@@ -32,9 +31,10 @@ export const EditFarm: React.FC<
   saveButtonProps,
   control,
 }) => {
-  const { autocompleteProps } = useAutocomplete<ICustomer>({
-    resource: "customers",
+  const { autocompleteProps } = useAutocomplete<IFarm>({
+    resource: "farms",
   });
+
   return (
     <Drawer
       sx={{ zIndex: "1301" }}
@@ -84,49 +84,72 @@ export const EditFarm: React.FC<
                       required: "Name is required",
                     })}
                     style={{ height: "40px" }}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel required>Description</FormLabel>
-                  <OutlinedInput
-                    id="descriptions"
-                    {...register("descriptions", {
-                      required: "Description is required",
-                    })}
-                    multiline
-                    minRows={3}
-                    maxRows={5}
+                    error={!!errors.name}
                   />
                 </FormControl>
                 <FormControl>
                   <Controller
                     control={control}
-                    name="customer"
+                    name="farm_id"
+                    rules={{ required: "This field is required" }}
                     defaultValue={null as any}
                     render={({ field }) => (
+                      //@ts-ignore
                       <Autocomplete
                         disablePortal
                         {...autocompleteProps}
                         {...field}
                         onChange={(_, value) => {
-                          field.onChange(value);
+                          field.onChange(value?.farm_id);
                         }}
                         getOptionLabel={(item) => {
-                          return item.username
-                            ? item.username
+                          return item.name
+                            ? item.name
                             : autocompleteProps?.options?.find(
-                                (p) => p.user_id.toString() === item.toString()
-                              )?.username ?? "";
+                                (p) => p.farm_id.toString() === item.toString()
+                              )?.name ?? "";
                         }}
                         isOptionEqualToValue={(option, value) =>
                           value === undefined ||
-                          option?.user_id === (value?.user_id ?? value)
+                          option?.farm_id === (value?.farm_id ?? value)
                         }
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            label="Assign to customer"
+                            label="Farm"
+                            margin="normal"
                             variant="outlined"
+                            error={!!errors.farm_id}
+                            helperText={errors.farm_id?.message}
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </FormControl>
+                <FormControl>
+                  <Controller
+                    control={control}
+                    name="type"
+                    rules={{ required: "This field is required" }}
+                    defaultValue={null as any}
+                    render={({ field }) => (
+                      <Autocomplete
+                        disablePortal
+                        getOptionLabel={(item) => {
+                          return item ? item : "";
+                        }}
+                        options={assetTypeOptions}
+                        {...field}
+                        onChange={(_, value) => {
+                          field.onChange(value);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Asset Type"
+                            variant="outlined"
+                            style={{ marginBottom: "10px" }}
                           />
                         )}
                       />

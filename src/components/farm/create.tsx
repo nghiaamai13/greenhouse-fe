@@ -111,7 +111,6 @@ export const CreateFarm: React.FC<
                     control={control}
                     name="customer"
                     render={({ field }) => (
-                      //@ts-ignore
                       <Autocomplete
                         disablePortal
                         {...autocompleteProps}

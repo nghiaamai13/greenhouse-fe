@@ -17,6 +17,7 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router-v6";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import AgricultureOutlinedIcon from "@mui/icons-material/AgricultureOutlined";
 import DeviceThermostatIcon from "@mui/icons-material/DeviceThermostat";
 import CategoryOutlined from "@mui/icons-material/CategoryOutlined";
 import StoreOutlined from "@mui/icons-material/StoreOutlined";
@@ -33,8 +34,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { FarmList, FarmShow } from "./pages/farm";
 import { DeviceList } from "./pages/device";
-import { DeviceProfileList } from "./pages/deviceProfile";
+import { DeviceProfileList } from "./pages/device_profile";
 import { CustomerList } from "./pages/customer";
+import { AssetList } from "./pages/asset";
 
 const API_URL = "http://localhost:8000/api";
 
@@ -127,6 +129,11 @@ const App: React.FC = () => {
                   name: "farms",
                   list: "/farms",
                   show: "/farms/:id",
+                  meta: { icon: <AgricultureOutlinedIcon /> },
+                },
+                {
+                  name: "assets",
+                  list: "/assets",
                   meta: { icon: <StoreOutlined /> },
                 },
                 {
@@ -177,6 +184,9 @@ const App: React.FC = () => {
                   <Route path="farms">
                     <Route index element={<FarmList />} />
                     <Route path=":id" element={<FarmShow />} />
+                  </Route>
+                  <Route path="assets">
+                    <Route index element={<AssetList />} />
                   </Route>
                   <Route path="device_profiles">
                     <Route index element={<DeviceProfileList />} />

@@ -7,13 +7,14 @@ import { CreateButton, DateField, List, useDataGrid } from "@refinedev/mui";
 import { ICustomer, ICustomerCreate, Nullable } from "../../interfaces";
 import { useModalForm } from "@refinedev/react-hook-form";
 import { CreateCustomer } from "./create";
+import { Stack } from "@mui/material";
 
 export const CustomerList: React.FC<IResourceComponentsProps> = () => {
   const { dataGridProps } = useDataGrid<ICustomer>({
     initialPageSize: 10,
     initialSorter: [
       {
-        field: "id",
+        field: "user_id",
         order: "desc",
       },
     ],
@@ -56,13 +57,20 @@ export const CustomerList: React.FC<IResourceComponentsProps> = () => {
     <>
       <CreateCustomer {...createDrawerFormProps} />
       <List wrapperProps={{ sx: { paddingX: { xs: 2, md: 0 } } }}>
-        <CreateButton
-          onClick={() => showCreateDrawer()}
-          variant="contained"
-          sx={{ marginBottom: "8px" }}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          sx={{ mb: "8px" }}
         >
-          Create
-        </CreateButton>
+          <CreateButton
+            onClick={() => showCreateDrawer()}
+            variant="contained"
+            sx={{ mb: "8px" }}
+          >
+            Create
+          </CreateButton>
+        </Stack>
+
         <DataGrid
           {...dataGridProps}
           columns={columns}

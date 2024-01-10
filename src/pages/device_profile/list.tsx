@@ -5,49 +5,33 @@ import {
   HttpError,
   IResourceComponentsProps,
   useDelete,
-  useNavigation,
   usePermissions,
 } from "@refinedev/core";
 import { CreateButton, DateField, List, useDataGrid } from "@refinedev/mui";
 
-import { IDevice, IDeviceCreate, Nullable } from "../../interfaces";
+import { IDeviceProfile, Nullable } from "../../interfaces";
 import { useModalForm } from "@refinedev/react-hook-form";
-import { CreateDevice } from "../../components/device/create";
-import { EditDevice } from "../../components/device/edit";
+import { CreateDeviceProfile } from "../../components/device_profile/create";
 import { Stack } from "@mui/material";
 import { Edit, Close } from "@mui/icons-material";
 
-export const DeviceList: React.FC<IResourceComponentsProps> = () => {
-  const { show } = useNavigation();
-  const { mutate: mutateDeleteOne } = useDelete<IDevice>();
+export const DeviceProfileList: React.FC<IResourceComponentsProps> = () => {
   const { data: role } = usePermissions();
+  const { mutate: mutateDeleteOne } = useDelete<IDeviceProfile>();
 
-  const createModalFormProps = useModalForm<
-    IDeviceCreate,
+  const createDrawerFormProps = useModalForm<
+    IDeviceProfile,
     HttpError,
-    Nullable<IDeviceCreate>
+    Nullable<IDeviceProfile>
   >({
     refineCoreProps: { action: "create" },
-    syncWithLocation: true,
-  });
-  const {
-    modal: { show: showCreateModal },
-  } = createModalFormProps;
-
-  const editDrawerFormProps = useModalForm<
-    IDeviceCreate,
-    HttpError,
-    Nullable<IDeviceCreate>
-  >({
-    refineCoreProps: { action: "edit" },
-    syncWithLocation: true,
   });
 
   const {
-    modal: { show: showEditDrawer },
-  } = editDrawerFormProps;
+    modal: { show: showCreateDrawer },
+  } = createDrawerFormProps;
 
-  const { dataGridProps } = useDataGrid<IDevice>({
+  const { dataGridProps } = useDataGrid<IDeviceProfile>({
     initialPageSize: 10,
     pagination: {
       mode: "client",
@@ -57,35 +41,13 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
     },
   });
 
-  const columns = React.useMemo<GridColDef<IDevice>[]>(
+  const columns = React.useMemo<GridColDef<IDeviceProfile>[]>(
     () => [
       {
         field: "name",
-        headerName: "Device Name",
+        headerName: "Profile Name",
         flex: 1,
-      },
-      {
-        field: "label",
-        headerName: "Label",
-        flex: 1,
-      },
-      {
-        field: "is_gateway",
-        headerName: "Is Gateway",
-        type: "boolean",
-        flex: 1,
-      },
-      {
-        field: "asset",
-        headerName: "Farm - Asset",
-        flex: 1,
-        valueGetter: ({ value }) => `${value?.farm.name} - ${value?.name}`,
-      },
-      {
-        field: "device_profile",
-        headerName: "Device Profile",
-        flex: 1,
-        valueGetter: ({ value }) => value?.name,
+        minWidth: 200,
       },
       {
         field: "created_at",
@@ -106,7 +68,7 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
               key={1}
               label="Edit"
               icon={<Edit color="success" />}
-              onClick={() => showEditDrawer(row.device_id)}
+              onClick={() => {}}
               showInMenu
             />,
             <GridActionsCellItem
@@ -115,8 +77,8 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
               icon={<Close color="error" />}
               onClick={() => {
                 mutateDeleteOne({
-                  resource: "devices",
-                  id: row.device_id,
+                  resource: "device_profiles",
+                  id: row.profile_id,
                 });
               }}
               showInMenu
@@ -130,12 +92,7 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
 
   return (
     <>
-      {role === "tenant" && (
-        <>
-          <CreateDevice {...createModalFormProps} />
-          <EditDevice {...editDrawerFormProps} />
-        </>
-      )}
+      <CreateDeviceProfile {...createDrawerFormProps} />
       <List wrapperProps={{ sx: { paddingX: { xs: 2, md: 0 } } }}>
         {role === "tenant" && (
           <Stack
@@ -144,7 +101,7 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
             sx={{ mb: "8px" }}
           >
             <CreateButton
-              onClick={() => showCreateModal()}
+              onClick={() => showCreateDrawer()}
               variant="contained"
               sx={{ mb: "8px" }}
             >
@@ -156,11 +113,11 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
         <DataGrid
           {...dataGridProps}
           columns={columns}
-          getRowId={(row) => row.device_id}
+          getRowId={(row) => row.profile_id}
           autoHeight
           checkboxSelection
           disableRowSelectionOnClick
-          pageSizeOptions={[10, 20, 50, 100]}
+          pageSizeOptions={[10, 25, 100]}
           density="comfortable"
           sx={{
             "& .MuiDataGrid-cell:hover": {

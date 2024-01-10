@@ -1,7 +1,4 @@
 import { Link } from "react-router-dom";
-import Box from "@mui/material/Box";
-
-import { BikeWhiteIcon, FineFoodsIcon } from "../../components/icons";
 import { Button } from "@mui/material";
 
 type TitleProps = {

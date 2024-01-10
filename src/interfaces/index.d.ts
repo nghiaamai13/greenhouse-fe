@@ -14,7 +14,7 @@ export interface IDeviceCreate {
   name: string;
   label: string;
   device_profile_id: string;
-  farm_id: string;
+  asset_id: string;
   is_gateway: boolean;
 }
 
@@ -28,12 +28,26 @@ export interface IFarm {
   assigned_customer: string;
 }
 
+export interface IAsset {
+  asset_id: string;
+  name: string;
+  type: string;
+  created_at: string;
+  farm: Object[IFarm];
+}
+
+export interface IAssetCreate {
+  name: string;
+  type: string;
+  farm_id: string;
+}
+
 export interface IDevice {
   device_id: number;
   name: string;
   created_at: string;
   is_gateway: boolean;
-  farm: Object[IFarm];
+  asset: Object[IAsset];
   device_profile: Object[IDeviceProfile];
 }
 export interface IDeviceProfile {
@@ -52,7 +66,7 @@ export interface ICustomer {
 }
 
 export interface IThreshold {
-  farm_id: string;
+  asset_id: string;
   key: string;
   threshold_max: number;
   threshold_min: number;

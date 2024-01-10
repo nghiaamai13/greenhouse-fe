@@ -6,7 +6,7 @@ type farmComponentProps = {
   apiUrl: string;
 };
 
-const FarmDeviceTable: React.FC<farmComponentProps> = ({ farm_id, apiUrl }) => {
+const DeviceTable: React.FC<farmComponentProps> = ({ farm_id, apiUrl }) => {
   const { data, isLoading } = useCustom<IDevice[]>({
     url: `${apiUrl}/farms/${farm_id}/devices`,
     method: "get",
@@ -26,4 +26,4 @@ const FarmDeviceTable: React.FC<farmComponentProps> = ({ farm_id, apiUrl }) => {
   );
 };
 
-export default FarmDeviceTable;
+export default DeviceTable;

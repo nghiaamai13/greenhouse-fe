@@ -28,7 +28,7 @@ import { Edit, Close } from "@mui/icons-material";
 import { ICustomer, IFarm, Nullable } from "../../interfaces";
 import { useModalForm, useForm } from "@refinedev/react-hook-form";
 import { Controller } from "react-hook-form";
-import { CreateFarm } from "./create";
+import { CreateFarm } from "../../components/farm/create";
 import {
   Box,
   Button,
@@ -42,10 +42,10 @@ import {
   Autocomplete,
   Typography,
 } from "@mui/material";
-import { EditFarm } from "./edit";
+import { EditFarm } from "../../components/farm/edit";
 
 export const FarmList: React.FC<IResourceComponentsProps> = () => {
-  const { mutate: mutateDelete } = useDeleteMany<IFarm>();
+  const { mutate: mutateDeleteMany } = useDeleteMany<IFarm>();
   const { mutate: mutateDeleteOne } = useDelete<IFarm>();
 
   const [isAssignDialogOpen, setAssignDialogOpen] = React.useState(false);
@@ -66,9 +66,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
   });
 
   const { dataGridProps } = useDataGrid<IFarm>({
-    sorters: {
-      mode: "off",
-    },
+    initialPageSize: 10,
     pagination: {
       mode: "client",
     },
@@ -83,19 +81,16 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
         field: "name",
         headerName: "Name",
         flex: 1,
-        maxWidth: 200,
       },
       {
         field: "descriptions",
         headerName: "Descriptions",
         flex: 1,
-        maxWidth: 350,
       },
       {
         field: "created_at",
         headerName: "Created Time",
         flex: 1,
-        maxWidth: 200,
         renderCell: function render({ row }) {
           return <DateField value={row.created_at} format="LLL" />;
         },
@@ -104,7 +99,6 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
         field: "customer",
         headerName: "Customer",
         flex: 1,
-        maxWidth: 200,
         valueGetter: ({ value }) => value?.username,
         renderCell: function render({ row }) {
           return (
@@ -153,21 +147,25 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
     ],
     []
   );
+
   const [isDeleteConfirmationOpen, setDeleteConfirmationOpen] =
     React.useState<boolean>(false);
+
   const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
   const handleSelectionModelChange = (selectionModel: string[]) => {
     console.log("Selected Rows:", selectionModel);
     setSelectedRows(selectionModel);
   };
+
   const isDeleteButtonVisible = selectedRows.length > 0;
+
   const handleDelete = async () => {
     setDeleteConfirmationOpen(true);
   };
 
   const invalidate = useInvalidate();
   const handleDeleteConfirmed = async () => {
-    mutateDelete(
+    mutateDeleteMany(
       {
         resource: "farms",
         ids: selectedRows.map(String),
@@ -185,6 +183,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
   const createDrawerFormProps = useModalForm<IFarm, HttpError, Nullable<IFarm>>(
     {
       refineCoreProps: { action: "create" },
+      syncWithLocation: true,
     }
   );
 
@@ -194,6 +193,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
 
   const editDrawerFormProps = useModalForm<IFarm, HttpError, Nullable<IFarm>>({
     refineCoreProps: { action: "edit" },
+    syncWithLocation: true,
   });
 
   const {
@@ -215,11 +215,12 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
             <Stack
               direction="row"
               justifyContent="space-between"
-              sx={{ marginBottom: "8px" }}
+              sx={{ mb: "8px" }}
             >
               <CreateButton
                 onClick={() => showCreateDrawer()}
                 variant="contained"
+                sx={{ mb: "8px" }}
               >
                 Create
               </CreateButton>
@@ -270,14 +271,15 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
               },
             }}
             onRowClick={(row) => {
-              console.log(row.id);
               show("farms", row.id);
             }}
           />
         </List>
       </Paper>
+
       {role === "tenant" && (
         <>
+          {/* ASSIGN TO CUSTOMER DIALOG */}
           <Dialog
             open={isAssignDialogOpen}
             onClose={() => setAssignDialogOpen(false)}
@@ -364,6 +366,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
               </form>
             </DialogContent>
           </Dialog>
+          {/* DELETE CONFIRMATION DIALOG */}
           <Dialog
             open={isDeleteConfirmationOpen}
             onClose={() => setDeleteConfirmationOpen(false)}

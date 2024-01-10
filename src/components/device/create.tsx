@@ -15,6 +15,7 @@ import { UseModalFormReturnType } from "@refinedev/react-hook-form";
 import { Controller } from "react-hook-form";
 
 import {
+  IAsset,
   IDeviceCreate,
   IDeviceProfile,
   IFarm,
@@ -40,8 +41,8 @@ export const CreateDevice: React.FC<
   control,
   formState: { errors },
 }) => {
-  const { autocompleteProps: farmAutocompleteProps } = useAutocomplete<IFarm>({
-    resource: "farms",
+  const { autocompleteProps: farmAutocompleteProps } = useAutocomplete<IAsset>({
+    resource: "assets",
   });
 
   const { autocompleteProps: profileAutocompleteProps } =
@@ -86,33 +87,36 @@ export const CreateDevice: React.FC<
             <FormControl>
               <Controller
                 control={control}
-                name="farm_id"
+                name="asset_id"
                 rules={{ required: "This field is required" }}
                 render={({ field }) => (
                   //@ts-ignore
                   <Autocomplete
-                    id="farm_id"
+                    id="asset_id"
                     {...farmAutocompleteProps}
                     {...field}
                     onChange={(_, value) => {
-                      console.log(value?.farm_id);
-                      field.onChange(value?.farm_id);
+                      console.log(value?.asset_id);
+                      field.onChange(value?.asset_id);
                     }}
                     getOptionLabel={(item) => {
-                      return item.name ? item.name : "";
+                      if (item.name && item.farm) {
+                        return `${item.name} (${item.farm.name})`;
+                      }
+                      return "";
                     }}
                     isOptionEqualToValue={(option, value) =>
                       value === undefined ||
-                      option?.farm_id === (value?.farm_id ?? value)
+                      option?.asset_id === (value?.asset_id ?? value)
                     }
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Farm"
+                        label="Asset"
                         margin="normal"
                         variant="outlined"
-                        error={!!errors.farm_id}
-                        helperText={errors.farm_id?.message}
+                        error={!!errors.asset_id}
+                        helperText={errors.asset_id?.message}
                       />
                     )}
                   />
