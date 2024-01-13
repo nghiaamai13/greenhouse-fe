@@ -167,6 +167,9 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
               cursor: "pointer",
             },
           }}
+          onRowClick={(row) => {
+            show("devices", row.id);
+          }}
         />
       </List>
     </>

@@ -1,5 +1,4 @@
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Box,
   List,
@@ -11,80 +10,29 @@ import {
   Alert,
   TextField,
   Stack,
-  IconButton,
-  Autocomplete,
-  FormControl,
-  DialogTitle,
-  Dialog,
-  DialogContent,
 } from "@mui/material";
-import ReplayOutlinedIcon from "@mui/icons-material/ReplayOutlined";
-import {
-  HttpError,
-  useApiUrl,
-  useCustom,
-  useCustomMutation,
-  useParsed,
-  useShow,
-} from "@refinedev/core";
-import { useForm } from "@refinedev/react-hook-form";
+import { useApiUrl, useNavigation, useParsed, useShow } from "@refinedev/core";
 
 import { IResourceComponentsProps } from "@refinedev/core/dist/contexts/resource";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
-import {
-  IFarm,
-  ITelemetry,
-  IThreshold,
-  IThresholdAdd,
-  Nullable,
-} from "../../interfaces";
-import { Breadcrumb, CreateButton, DateField, Show } from "@refinedev/mui";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Controller } from "react-hook-form";
+import { IAsset } from "../../interfaces";
+import { Breadcrumb, Show } from "@refinedev/mui";
+import LatestTelemetryTable from "../../components/telemetry/LatestTelemetryTable";
+import { CustomLinkField } from "../../components/customLinkField";
+import ThresholdTable from "../../components/asset/dashboard/ThresholdTable";
 
 export const AssetShow: React.FC<IResourceComponentsProps> = () => {
   const { id } = useParsed();
   const apiUrl = useApiUrl();
   const [activeTab, setActiveTab] = useState("1");
   const [copiedId, setCopiedId] = useState(false);
-  const queryClient = useQueryClient();
+  const { show } = useNavigation();
 
   const {
-    register,
-    control,
-    formState: { errors },
-    handleSubmit,
-    reset,
-  } = useForm<IThresholdAdd, HttpError, Nullable<IThresholdAdd>>();
-
-  const {
-    queryResult: { data: farm },
-  } = useShow<IFarm>();
-  const farm_data = farm?.data;
-
-  const { data: key_data, isLoading: keyIsLoading } = useCustom({
-    url: `${apiUrl}/farms/${id}/keys`,
-    method: "get",
-  });
-
-  const { data: telemetry_data, isLoading: telemetryIsLoading } =
-    useCustom<ITelemetry>({
-      url: `${apiUrl}/farms/${id}/telemetry/latest`,
-      method: "get",
-      queryOptions: {
-        queryKey: ["farm_latest_telemetry"],
-      },
-    });
-
-  const { data: threshholds_data, isLoading: thresholdIsLoading } =
-    useCustom<IThreshold>({
-      url: `${apiUrl}/farms/${id}/thresholds`,
-      method: "get",
-      queryOptions: {
-        queryKey: ["farm_thresholds"],
-      },
-    });
+    queryResult: { data: asset },
+  } = useShow<IAsset>();
+  const asset_data = asset?.data;
 
   const handleTabChange = (
     event: React.SyntheticEvent,
@@ -93,69 +41,20 @@ export const AssetShow: React.FC<IResourceComponentsProps> = () => {
     setActiveTab(newTabIndex);
   };
 
-  const thresholdColumns = React.useMemo<GridColDef<IThreshold>[]>(
-    () => [
-      { field: "key", headerName: "Key", flex: 1 },
-      {
-        field: "threshold_min",
-        headerName: "Min Value",
-        width: 120,
-      },
-      {
-        field: "threshold_max",
-        headerName: "Max Value",
-        width: 120,
-      },
-      {
-        field: "modified_at",
-        headerName: "Created/Modified At",
-        flex: 1,
-        minWidth: 300,
-        renderCell: function render({ row }) {
-          return <DateField value={row.modified_at} format="LLL" />;
-        },
-      },
-    ],
-    []
-  );
-
-  const telemetryColumns = React.useMemo<GridColDef<ITelemetry>[]>(
-    () => [
-      { field: "key", headerName: "Key", flex: 1 },
-      {
-        field: "value",
-        headerName: "Value",
-        width: 120,
-      },
-
-      {
-        field: "timestamp",
-        headerName: "Timestamp",
-        flex: 1,
-        minWidth: 300,
-        renderCell: function render({ row }) {
-          return <DateField value={row.timestamp} format="LLL" />;
-        },
-      },
-    ],
-    []
-  );
-
   return (
     <>
       <Show
-        isLoading={thresholdIsLoading || keyIsLoading || telemetryIsLoading}
         breadcrumb={<Breadcrumb />}
         title={
           <Box>
             <Typography sx={{ fontSize: "1.4993rem", fontWeight: "800" }}>
-              {farm_data?.name}
+              {asset_data?.name}
             </Typography>
-            <Typography sx={{ mt: "5px" }}>Farm details</Typography>
+            <Typography sx={{ mt: "5px" }}>Asset details</Typography>
           </Box>
         }
       >
-        <Paper sx={{ maxWidth: "80%", minHeight: "72vh" }}>
+        <Paper>
           <List sx={{ paddingX: { xs: 2, md: 0 }, flex: 1 }}>
             <TabContext value={activeTab}>
               <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -164,89 +63,92 @@ export const AssetShow: React.FC<IResourceComponentsProps> = () => {
                   aria-label="lab API tabs example"
                 >
                   <Tab label="Details" value="1" />
-                  <Tab label="Dashboard" value="2" />
+                  <Tab label="Telemetry" value="2" />
+                  <Tab label="Threshold" value="3" />
                 </TabList>
               </Box>
               {/* TABS */}
               <TabPanel value="1">
-                <Box sx={{ display: "flex", flexDirection: "row", mt: "5px" }}>
-                  <Button
-                    sx={{ marginRight: "8px" }}
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      setCopiedId(true);
-                      //@ts-ignore
-                      navigator.clipboard.writeText(id);
-                    }}
-                  >
-                    Copy farm id
-                  </Button>
-                  <Button
-                    sx={{ marginRight: "8px" }}
-                    variant="contained"
-                    color="primary"
-                  >
-                    View Dashboard
-                  </Button>
-                </Box>
-                <Box mt={2}>
-                  <TextField
-                    label="Farm Name"
-                    focused={true}
-                    value={farm_data?.name}
-                    fullWidth
-                    variant="filled"
-                    margin="normal"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    sx={{ outline: "none" }}
-                  />
-                  <TextField
-                    label="Description"
-                    focused={true}
-                    value={farm_data?.descriptions || ""}
-                    multiline
-                    rows={4}
-                    fullWidth
-                    variant="filled"
-                    margin="normal"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                  <TextField
-                    label="Assigned Customer"
-                    focused={true}
-                    value={farm_data?.customer?.username}
-                    fullWidth
-                    variant="filled"
-                    margin="normal"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                  <TextField
-                    label="Created At"
-                    focused={true}
-                    value={farm_data?.created_at}
-                    fullWidth
-                    variant="filled"
-                    margin="normal"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                </Box>
+                {asset_data ? (
+                  <Stack sx={{ maxWidth: "80%" }}>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "row", mt: "5px" }}
+                    >
+                      <Button
+                        sx={{ marginRight: "8px" }}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          setCopiedId(true);
+                          //@ts-ignore
+                          navigator.clipboard.writeText(id);
+                        }}
+                      >
+                        Copy asset id
+                      </Button>
+                    </Box>
+                    <Box mt={2}>
+                      <TextField
+                        label="Asset Name"
+                        focused={true}
+                        value={asset_data?.name}
+                        fullWidth
+                        variant="filled"
+                        margin="normal"
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                      />
+                      <TextField
+                        label="Type"
+                        focused={true}
+                        value={asset_data?.type || ""}
+                        multiline
+                        rows={4}
+                        fullWidth
+                        variant="filled"
+                        margin="normal"
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                      />
+                      <CustomLinkField
+                        field_name="Farm"
+                        field_data_name={asset_data?.farm.name}
+                        onClick={() => show("farms", asset_data?.farm.farm_id)}
+                      />
+                      <TextField
+                        label="Created At"
+                        focused={true}
+                        value={asset_data?.created_at}
+                        fullWidth
+                        variant="filled"
+                        margin="normal"
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                      />
+                    </Box>
+                  </Stack>
+                ) : (
+                  <Alert severity="error">Failed to fetch asset data</Alert>
+                )}
               </TabPanel>
 
               <TabPanel value="2">
-                Dashboard
-                {/* <FarmDeviceTable
-                  apiUrl={apiUrl}
-                  farm_id={farm_data?.farm_id || ""}
-                /> */}
+                <LatestTelemetryTable
+                  entity_id={id ? id.toString() : ""}
+                  entity_type={"assets"}
+                />
+              </TabPanel>
+              <TabPanel value="3" sx={{ maxWidth: "800px" }}>
+                {asset_data?.type === "Outdoor Field" ? (
+                  <Alert severity="error">
+                    You can't set threshold on an Outdoor Fields
+                  </Alert>
+                ) : (
+                  <ThresholdTable asset_id={id ? id.toString() : ""} />
+                )}
               </TabPanel>
             </TabContext>
           </List>
@@ -255,13 +157,13 @@ export const AssetShow: React.FC<IResourceComponentsProps> = () => {
         {/* Copy to clipboard snackbar */}
         <Snackbar
           open={copiedId}
-          autoHideDuration={6000}
+          autoHideDuration={5000}
           onClose={(event?: React.SyntheticEvent | Event, reason?: string) => {
             setCopiedId(false);
           }}
         >
           <Alert severity="success" sx={{ width: "100%" }}>
-            Copied Farm ID to clipboard
+            Copied Asset ID to clipboard
           </Alert>
         </Snackbar>
       </Show>

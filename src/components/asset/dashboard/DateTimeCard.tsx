@@ -43,7 +43,7 @@ const DateTimeCard: React.FC = () => {
         flexDirection: "column",
         justifyContent: "center",
         background: "linear-gradient(to bottom, #87CEEB, #5F9EA0)",
-        color: "white",
+        color: "gray",
         transition: "background 0.3s ease",
         cursor: "pointer",
       }}
@@ -57,10 +57,15 @@ const DateTimeCard: React.FC = () => {
       }
     >
       <CardContent>
-        <Typography variant="h5" component="div">
+        <Typography variant="h6" fontWeight={"bold"} component="div">
           {formatDate(currentDateTime)}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="subtitle2"
+          component={"div"}
+          mt={5}
+          color={"white"}
+        >
           {formatTime(currentDateTime)}
         </Typography>
       </CardContent>

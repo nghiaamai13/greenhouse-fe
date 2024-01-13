@@ -201,7 +201,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
   } = editDrawerFormProps;
 
   return (
-    <>
+    <Stack>
       {role === "tenant" && (
         <>
           <CreateFarm {...createDrawerFormProps} />
@@ -209,73 +209,71 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
         </>
       )}
 
-      <Paper>
-        <List wrapperProps={{ sx: { paddingX: { xs: 2, md: 0 }, flex: 1 } }}>
-          {role === "tenant" && (
-            <Stack
-              direction="row"
-              justifyContent="space-between"
+      <List wrapperProps={{ sx: { paddingX: { xs: 2, md: 0 }, flex: 1 } }}>
+        {role === "tenant" && (
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            sx={{ mb: "8px" }}
+          >
+            <CreateButton
+              onClick={() => showCreateDrawer()}
+              variant="contained"
               sx={{ mb: "8px" }}
             >
-              <CreateButton
-                onClick={() => showCreateDrawer()}
-                variant="contained"
-                sx={{ mb: "8px" }}
-              >
-                Create
-              </CreateButton>
+              Create
+            </CreateButton>
 
-              {isDeleteButtonVisible && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
+            {isDeleteButtonVisible && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <EditButton
+                  variant="contained"
+                  color="info"
+                  onClick={() => {
+                    setAssignDialogOpen(true);
                   }}
                 >
-                  <EditButton
-                    variant="contained"
-                    color="info"
-                    onClick={() => {
-                      setAssignDialogOpen(true);
-                    }}
-                  >
-                    Assign Devices
-                  </EditButton>
-                  <DeleteButton
-                    onClick={handleDelete}
-                    variant="contained"
-                    sx={{ marginLeft: "8px" }}
-                  >
-                    Delete {selectedRows.length} Farms
-                  </DeleteButton>
-                </Box>
-              )}
-            </Stack>
-          )}
+                  Assign Devices
+                </EditButton>
+                <DeleteButton
+                  onClick={handleDelete}
+                  variant="contained"
+                  sx={{ marginLeft: "8px" }}
+                >
+                  Delete {selectedRows.length} Farms
+                </DeleteButton>
+              </Box>
+            )}
+          </Stack>
+        )}
 
-          <DataGrid
-            {...dataGridProps}
-            getRowId={(row) => row.farm_id}
-            columns={columns}
-            autoHeight
-            checkboxSelection
-            disableRowSelectionOnClick
-            onRowSelectionModelChange={(selectionModel) => {
-              handleSelectionModelChange(selectionModel.map(String));
-            }}
-            pageSizeOptions={[10, 25, 50]}
-            density="comfortable"
-            sx={{
-              "& .MuiDataGrid-cell:hover": {
-                cursor: "pointer",
-              },
-            }}
-            onRowClick={(row) => {
-              show("farms", row.id);
-            }}
-          />
-        </List>
-      </Paper>
+        <DataGrid
+          {...dataGridProps}
+          getRowId={(row) => row.farm_id}
+          columns={columns}
+          autoHeight
+          checkboxSelection
+          disableRowSelectionOnClick
+          onRowSelectionModelChange={(selectionModel) => {
+            handleSelectionModelChange(selectionModel.map(String));
+          }}
+          pageSizeOptions={[10, 25, 50]}
+          density="comfortable"
+          sx={{
+            "& .MuiDataGrid-cell:hover": {
+              cursor: "pointer",
+            },
+          }}
+          onRowClick={(row) => {
+            show("farms", row.id);
+          }}
+        />
+      </List>
 
       {role === "tenant" && (
         <>
@@ -396,6 +394,6 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
           </Dialog>
         </>
       )}
-    </>
+    </Stack>
   );
 };

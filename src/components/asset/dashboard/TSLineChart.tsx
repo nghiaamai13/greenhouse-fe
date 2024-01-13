@@ -5,17 +5,11 @@ import "chartjs-adapter-luxon";
 import StreamingPlugin from "chartjs-plugin-streaming";
 import { Box, Stack } from "@mui/material";
 import mqtt from "mqtt";
+import { StreamProps } from "../../../interfaces";
+import { MQTT_BROKER_ADDRESS } from "../../../constant";
 
 Chart.register(...registerables);
 Chart.register(StreamingPlugin);
-
-interface StreamProps {
-  color: string;
-  dataKey: string;
-  dataUnit?: string;
-  asset_id: string;
-}
-const MQTT_BROKER_ADDRESS = "mqtt://127.0.0.1:8080";
 
 export const TSLineChart: React.FC<StreamProps> = ({
   asset_id,
@@ -23,7 +17,7 @@ export const TSLineChart: React.FC<StreamProps> = ({
   dataKey,
   dataUnit,
 }) => {
-  const mqtt_topic = `asset/${asset_id}/telemetry`;
+  const mqtt_topic = `assets/${asset_id}/telemetry`;
 
   const [chartData, setChartData] = useState<{ x: number; y: any }[]>([]);
 
@@ -53,7 +47,7 @@ export const TSLineChart: React.FC<StreamProps> = ({
   }, [mqtt_topic]);
 
   return (
-    <Box sx={{ width: "25%", height: "auto", margin: 0 }}>
+    <Box sx={{ width: "100%", height: "auto", margin: 0 }}>
       <Line
         data={{
           datasets: [

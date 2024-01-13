@@ -17,7 +17,7 @@ import {
   useDataGrid,
 } from "@refinedev/mui";
 
-import { IAsset, IAssetCreate, IDevice, Nullable } from "../../interfaces";
+import { IAsset, IAssetCreate, Nullable } from "../../interfaces";
 import { useModalForm } from "@refinedev/react-hook-form";
 import { CreateAsset } from "../../components/asset/create";
 import {
@@ -212,6 +212,9 @@ export const AssetList: React.FC<IResourceComponentsProps> = () => {
             "& .MuiDataGrid-cell:hover": {
               cursor: "pointer",
             },
+          }}
+          onRowClick={(row) => {
+            show("assets", row.id);
           }}
         />
       </List>

@@ -37,8 +37,9 @@ import { DeviceList } from "./pages/device";
 import { DeviceProfileList } from "./pages/device_profile";
 import { CustomerList } from "./pages/customer";
 import { AssetList } from "./pages/asset";
-
-const API_URL = "http://localhost:8000/api";
+import { API_URL } from "./constant";
+import { AssetShow } from "./pages/asset/show";
+import { DeviceShow } from "./pages/device/show";
 
 const App: React.FC = () => {
   const [customerResources, setCustomerResources] = useState<boolean>(false);
@@ -134,6 +135,7 @@ const App: React.FC = () => {
                 {
                   name: "assets",
                   list: "/assets",
+                  show: "/assets/:id",
                   meta: { icon: <StoreOutlined /> },
                 },
                 {
@@ -147,6 +149,7 @@ const App: React.FC = () => {
                 {
                   name: "devices",
                   list: "/devices",
+                  show: "/devices/:id",
                   meta: { icon: <DeviceThermostatIcon /> },
                 },
                 {
@@ -187,12 +190,14 @@ const App: React.FC = () => {
                   </Route>
                   <Route path="assets">
                     <Route index element={<AssetList />} />
+                    <Route path=":id" element={<AssetShow />} />
                   </Route>
                   <Route path="device_profiles">
                     <Route index element={<DeviceProfileList />} />
                   </Route>
                   <Route path="devices">
                     <Route index element={<DeviceList />} />
+                    <Route path=":id" element={<DeviceShow />} />
                   </Route>
 
                   <Route path="*" element={<ErrorComponent />} />

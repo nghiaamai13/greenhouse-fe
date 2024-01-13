@@ -45,6 +45,7 @@ export interface IAssetCreate {
 export interface IDevice {
   device_id: number;
   name: string;
+  label: string;
   created_at: string;
   is_gateway: boolean;
   asset: Object[IAsset];
@@ -84,8 +85,22 @@ export interface ITelemetry {
   key: string;
   value: number;
   timestamp: string;
+  device_id: string;
+  device_name: string;
+}
+
+export interface IDeviceControl {
+  device_id: string;
+  json_data: string;
 }
 
 export type Nullable<T> = {
   [P in keyof T]: T[P] | null;
 };
+
+export interface StreamProps {
+  color: string;
+  dataKey: string;
+  dataUnit?: string;
+  asset_id: string;
+}

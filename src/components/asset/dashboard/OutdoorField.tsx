@@ -14,9 +14,25 @@ const OutdoorField: React.FC<OutdoorFieldProps> = ({ asset_id, name }) => {
       <Typography variant="h6">{name}</Typography>
       <Stack direction={"row"} sx={{ flex: 1, gap: "20px" }}>
         <DateTimeCard />
-        <TSCard />
-        <TSCard />
-        <TSCard />
+        <TSCard
+          dataKey="temperature"
+          dataUnit="°C"
+          asset_id={asset_id}
+          color="#EBE76C"
+        />
+        <TSCard
+          dataKey="humidity"
+          dataUnit="%"
+          asset_id={asset_id}
+          color="#AEFEBC"
+        />
+        <TSCard dataKey="AQI" asset_id={asset_id} color="#FFC6FF" />
+        <TSCard
+          dataKey="Rain"
+          asset_id={asset_id}
+          color="#FF0F"
+          dataUnit="mm"
+        />
       </Stack>
     </Paper>
   );

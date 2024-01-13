@@ -73,15 +73,15 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                   onChange={handleTabChange}
                   aria-label="lab API tabs example"
                 >
-                  <Tab label="Details" value="1" />
-                  <Tab label="Entities" value="2" />
-                  <Tab label="Dashboard" value="3" />
+                  <Tab label="Dashboard" value="1" />
+                  <Tab label="Details" value="2" />
+                  <Tab label="Entities" value="3" />
                 </TabList>
               </Box>
               {/* TABS */}
-              <TabPanel value="1" sx={{ maxWidth: "80%" }}>
+              <TabPanel value="2">
                 {farm_data ? (
-                  <Stack>
+                  <Stack sx={{ maxWidth: "80%" }}>
                     <Box
                       sx={{ display: "flex", flexDirection: "row", mt: "5px" }}
                     >
@@ -101,7 +101,7 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                         sx={{ marginRight: "8px" }}
                         variant="contained"
                         color="primary"
-                        onClick={() => setActiveTab("3")}
+                        onClick={() => setActiveTab("1")}
                       >
                         View Dashboard
                       </Button>
@@ -161,8 +161,8 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                 )}
               </TabPanel>
 
-              <TabPanel value="2">Entities</TabPanel>
-              <TabPanel value="3">
+              <TabPanel value="3">Entities</TabPanel>
+              <TabPanel value="1">
                 <Stack direction="column" sx={{ flex: 1 }}>
                   <Box>
                     <Typography variant="h5" color="#7FC7D9">
@@ -193,7 +193,7 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                         />
                       ))
                     ) : (
-                      <Typography>No outdoor fields</Typography>
+                      <Typography>No greenhouses</Typography>
                     )}
                   </Box>
                 </Stack>
