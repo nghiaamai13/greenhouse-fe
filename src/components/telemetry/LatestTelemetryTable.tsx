@@ -6,7 +6,7 @@ import { useApiUrl, useCustom, useNavigation } from "@refinedev/core";
 import { Alert, Link, Typography } from "@mui/material";
 import mqtt from "mqtt";
 import { useQueryClient } from "@tanstack/react-query";
-import { MQTT_BROKER_ADDRESS } from "../../constant";
+import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../constant";
 
 interface LatestTelemetryTableProps {
   entity_type: string;
@@ -73,7 +73,9 @@ const LatestTelemetryTable: React.FC<LatestTelemetryTableProps> = ({
   const mqtt_topic = `${entity_type}/${entity_id}/telemetry`;
 
   useEffect(() => {
-    const client = mqtt.connect(MQTT_BROKER_ADDRESS);
+    const client = mqtt.connect(
+      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
+    );
 
     client.on("connect", () => {
       client.subscribe(mqtt_topic);
@@ -121,7 +123,7 @@ const LatestTelemetryTable: React.FC<LatestTelemetryTableProps> = ({
             "& .MuiDataGrid-cell:hover": {
               cursor: "pointer",
             },
-            width: "800px",
+            width: "100%",
           }}
         />
       )}

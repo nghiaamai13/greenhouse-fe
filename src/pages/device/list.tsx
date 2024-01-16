@@ -5,21 +5,36 @@ import {
   HttpError,
   IResourceComponentsProps,
   useDelete,
+  useDeleteMany,
   useNavigation,
   usePermissions,
 } from "@refinedev/core";
-import { CreateButton, DateField, List, useDataGrid } from "@refinedev/mui";
+import {
+  CreateButton,
+  DateField,
+  DeleteButton,
+  List,
+  useDataGrid,
+} from "@refinedev/mui";
 
 import { IDevice, IDeviceCreate, Nullable } from "../../interfaces";
 import { useModalForm } from "@refinedev/react-hook-form";
 import { CreateDevice } from "../../components/device/create";
 import { EditDevice } from "../../components/device/edit";
-import { Stack } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+} from "@mui/material";
 import { Edit, Close } from "@mui/icons-material";
 
 export const DeviceList: React.FC<IResourceComponentsProps> = () => {
   const { show } = useNavigation();
   const { mutate: mutateDeleteOne } = useDelete<IDevice>();
+  const { mutate: mutateDeleteMany } = useDeleteMany<IDevice>();
   const { data: role } = usePermissions();
 
   const createModalFormProps = useModalForm<
@@ -127,6 +142,34 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
     ],
     []
   );
+  const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
+  const handleSelectionModelChange = (selectionModel: string[]) => {
+    setSelectedRows(selectionModel);
+  };
+  const isDeleteButtonVisible = selectedRows.length > 0;
+
+  const [isDeleteConfirmationOpen, setDeleteConfirmationOpen] =
+    React.useState<boolean>(false);
+
+  const handleDelete = async () => {
+    setDeleteConfirmationOpen(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    mutateDeleteMany(
+      {
+        resource: "devices",
+        ids: selectedRows.map(String),
+      },
+      {
+        onSuccess: () => {
+          setSelectedRows([]);
+        },
+      }
+    );
+    setDeleteConfirmationOpen(false);
+    setSelectedRows([]);
+  };
 
   return (
     <>
@@ -150,6 +193,15 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
             >
               Create
             </CreateButton>
+            {isDeleteButtonVisible && (
+              <DeleteButton
+                onClick={handleDelete}
+                variant="contained"
+                sx={{ marginLeft: "8px" }}
+              >
+                Delete {selectedRows.length} Devices
+              </DeleteButton>
+            )}
           </Stack>
         )}
 
@@ -160,7 +212,10 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
           autoHeight
           checkboxSelection
           disableRowSelectionOnClick
-          pageSizeOptions={[10, 20, 50, 100]}
+          onRowSelectionModelChange={(selectionModel) => {
+            handleSelectionModelChange(selectionModel.map(String));
+          }}
+          pageSizeOptions={[10, 25, 50]}
           density="comfortable"
           sx={{
             "& .MuiDataGrid-cell:hover": {
@@ -172,6 +227,35 @@ export const DeviceList: React.FC<IResourceComponentsProps> = () => {
           }}
         />
       </List>
+      {role == "tenant" && (
+        <Dialog
+          open={isDeleteConfirmationOpen}
+          onClose={() => setDeleteConfirmationOpen(false)}
+          aria-labelledby="delete-confirmation-dialog-title"
+        >
+          <DialogTitle id="delete-confirmation-dialog-title">
+            Delete {selectedRows.length} Devices
+          </DialogTitle>
+          <DialogContent>
+            <p>Are you sure you want to delete the selected devices?</p>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setDeleteConfirmationOpen(false)}
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirmed}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
 };

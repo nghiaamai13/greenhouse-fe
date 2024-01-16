@@ -77,7 +77,7 @@ export const CustomerList: React.FC<IResourceComponentsProps> = () => {
           getRowId={(row) => row.user_id}
           autoHeight
           checkboxSelection
-          pageSizeOptions={[10, 25, 50, 100]}
+          pageSizeOptions={[10, 25, 50]}
           density="comfortable"
           sx={{
             "& .MuiDataGrid-cell:hover": {

@@ -19,7 +19,7 @@ import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { IDevice, IDeviceControl, Nullable } from "../../../interfaces";
 import { Close, FormatAlignLeft } from "@mui/icons-material";
-import { MQTT_BROKER_ADDRESS } from "../../../constant";
+import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
 import mqtt from "mqtt";
 
 interface GreenhouseControlDialogProps {
@@ -49,9 +49,11 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
 
   const { open: openNotification } = useNotification();
   const handleSendControl = (data: any) => {
-    const client = mqtt.connect(MQTT_BROKER_ADDRESS);
+    const client = mqtt.connect(
+      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
+    );
 
-    const controlTopic = `device/${data.device_id}/control`;
+    const controlTopic = `devices/${data.device_id}/control`;
     client.subscribe(controlTopic);
 
     client.publish(controlTopic, data.json_data);

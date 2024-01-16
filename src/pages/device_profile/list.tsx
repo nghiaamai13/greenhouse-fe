@@ -5,19 +5,34 @@ import {
   HttpError,
   IResourceComponentsProps,
   useDelete,
+  useDeleteMany,
   usePermissions,
 } from "@refinedev/core";
-import { CreateButton, DateField, List, useDataGrid } from "@refinedev/mui";
+import {
+  CreateButton,
+  DateField,
+  DeleteButton,
+  List,
+  useDataGrid,
+} from "@refinedev/mui";
 
 import { IDeviceProfile, Nullable } from "../../interfaces";
 import { useModalForm } from "@refinedev/react-hook-form";
 import { CreateDeviceProfile } from "../../components/device_profile/create";
-import { Stack } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+} from "@mui/material";
 import { Edit, Close } from "@mui/icons-material";
 
 export const DeviceProfileList: React.FC<IResourceComponentsProps> = () => {
   const { data: role } = usePermissions();
   const { mutate: mutateDeleteOne } = useDelete<IDeviceProfile>();
+  const { mutate: mutateDeleteMany } = useDeleteMany<IDeviceProfile>();
 
   const createDrawerFormProps = useModalForm<
     IDeviceProfile,
@@ -90,6 +105,35 @@ export const DeviceProfileList: React.FC<IResourceComponentsProps> = () => {
     []
   );
 
+  const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
+  const handleSelectionModelChange = (selectionModel: string[]) => {
+    setSelectedRows(selectionModel);
+  };
+  const isDeleteButtonVisible = selectedRows.length > 0;
+
+  const [isDeleteConfirmationOpen, setDeleteConfirmationOpen] =
+    React.useState<boolean>(false);
+
+  const handleDelete = async () => {
+    setDeleteConfirmationOpen(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    mutateDeleteMany(
+      {
+        resource: "device_profiles",
+        ids: selectedRows.map(String),
+      },
+      {
+        onSuccess: () => {
+          setSelectedRows([]);
+        },
+      }
+    );
+    setDeleteConfirmationOpen(false);
+    setSelectedRows([]);
+  };
+
   return (
     <>
       <CreateDeviceProfile {...createDrawerFormProps} />
@@ -107,6 +151,15 @@ export const DeviceProfileList: React.FC<IResourceComponentsProps> = () => {
             >
               Create
             </CreateButton>
+            {isDeleteButtonVisible && (
+              <DeleteButton
+                onClick={handleDelete}
+                variant="contained"
+                sx={{ marginLeft: "8px" }}
+              >
+                Delete {selectedRows.length} Device Profiles
+              </DeleteButton>
+            )}
           </Stack>
         )}
 
@@ -116,8 +169,11 @@ export const DeviceProfileList: React.FC<IResourceComponentsProps> = () => {
           getRowId={(row) => row.profile_id}
           autoHeight
           checkboxSelection
+          onRowSelectionModelChange={(selectionModel) => {
+            handleSelectionModelChange(selectionModel.map(String));
+          }}
           disableRowSelectionOnClick
-          pageSizeOptions={[10, 25, 100]}
+          pageSizeOptions={[10, 25, 50]}
           density="comfortable"
           sx={{
             "& .MuiDataGrid-cell:hover": {
@@ -126,6 +182,35 @@ export const DeviceProfileList: React.FC<IResourceComponentsProps> = () => {
           }}
         />
       </List>
+      {role == "tenant" && (
+        <Dialog
+          open={isDeleteConfirmationOpen}
+          onClose={() => setDeleteConfirmationOpen(false)}
+          aria-labelledby="delete-confirmation-dialog-title"
+        >
+          <DialogTitle id="delete-confirmation-dialog-title">
+            Delete {selectedRows.length} Device Profiles
+          </DialogTitle>
+          <DialogContent>
+            <p>Are you sure you want to delete the selected device profiles?</p>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setDeleteConfirmationOpen(false)}
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirmed}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
 };

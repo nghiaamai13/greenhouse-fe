@@ -6,7 +6,7 @@ import StreamingPlugin from "chartjs-plugin-streaming";
 import { Box, Stack } from "@mui/material";
 import mqtt from "mqtt";
 import { StreamProps } from "../../../interfaces";
-import { MQTT_BROKER_ADDRESS } from "../../../constant";
+import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
 
 Chart.register(...registerables);
 Chart.register(StreamingPlugin);
@@ -22,7 +22,9 @@ export const TSLineChart: React.FC<StreamProps> = ({
   const [chartData, setChartData] = useState<{ x: number; y: any }[]>([]);
 
   useEffect(() => {
-    const client = mqtt.connect(MQTT_BROKER_ADDRESS);
+    const client = mqtt.connect(
+      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
+    );
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");

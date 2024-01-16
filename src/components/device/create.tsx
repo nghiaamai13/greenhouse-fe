@@ -96,7 +96,6 @@ export const CreateDevice: React.FC<
                     {...farmAutocompleteProps}
                     {...field}
                     onChange={(_, value) => {
-                      console.log(value?.asset_id);
                       field.onChange(value?.asset_id);
                     }}
                     getOptionLabel={(item) => {
@@ -135,7 +134,6 @@ export const CreateDevice: React.FC<
                     {...profileAutocompleteProps}
                     {...field}
                     onChange={(_, value) => {
-                      console.log(value?.profile_id);
                       field.onChange(value?.profile_id);
                     }}
                     getOptionLabel={(item) => {

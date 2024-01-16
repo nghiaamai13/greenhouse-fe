@@ -153,7 +153,6 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
 
   const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
   const handleSelectionModelChange = (selectionModel: string[]) => {
-    console.log("Selected Rows:", selectionModel);
     setSelectedRows(selectionModel);
   };
 
@@ -292,7 +291,6 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
             <DialogContent sx={{ flex: 1, flexDirection: "row" }}>
               <form
                 onSubmit={handleSubmit((data) => {
-                  console.log(data?.customer?.user_id);
                   selectedRows.map((row) => {
                     mutate(
                       {
@@ -335,7 +333,6 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
                         {...autocompleteProps}
                         {...field}
                         onChange={(_, value) => {
-                          console.log(value);
                           field.onChange(value);
                         }}
                         getOptionLabel={(item) => {

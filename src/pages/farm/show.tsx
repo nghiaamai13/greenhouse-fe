@@ -10,6 +10,7 @@ import {
   Alert,
   TextField,
   Stack,
+  Grid,
 } from "@mui/material";
 import { useApiUrl, useCustom, useParsed, useShow } from "@refinedev/core";
 
@@ -21,6 +22,8 @@ import { Breadcrumb, Show } from "@refinedev/mui";
 import { GridColDef } from "@mui/x-data-grid";
 import OutdoorField from "../../components/asset/dashboard/OutdoorField";
 import Greenhouse from "../../components/asset/dashboard/Greenhouse";
+import DeviceTable from "../../components/farm/DeviceTable";
+import AssetTable from "../../components/farm/AssetTable";
 
 export const FarmShow: React.FC<IResourceComponentsProps> = () => {
   const { id } = useParsed();
@@ -161,7 +164,25 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                 )}
               </TabPanel>
 
-              <TabPanel value="3">Entities</TabPanel>
+              <TabPanel value="3">
+                <Stack direction="column" sx={{ flex: 1 }}>
+                  <Typography variant="h6" fontWeight={"bold"}>
+                    Entities
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={4}>
+                      <AssetTable
+                        farm_id={farm_data ? farm_data.farm_id : ""}
+                      />
+                    </Grid>
+                    <Grid item xs={8}>
+                      <DeviceTable
+                        farm_id={farm_data ? farm_data.farm_id : ""}
+                      />
+                    </Grid>
+                  </Grid>
+                </Stack>
+              </TabPanel>
               <TabPanel value="1">
                 <Stack direction="column" sx={{ flex: 1 }}>
                   <Box>

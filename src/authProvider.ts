@@ -23,9 +23,7 @@ export const authProvider: AuthBindings = {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Login successful:", data);
         localStorage.setItem(TOKEN_KEY, data.access_token);
-        console.log(data.scope);
         localStorage.setItem("currentUserScope", data.scope);
 
         const event = new Event("custom:scope-update");

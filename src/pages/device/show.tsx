@@ -12,9 +12,14 @@ import {
   Stack,
   Dialog,
   DialogTitle,
+  DialogContent,
+  InputAdornment,
+  IconButton,
+  Link,
 } from "@mui/material";
 import { useApiUrl, useNavigation, useParsed, useShow } from "@refinedev/core";
 
+import { FileCopyOutlined } from "@mui/icons-material";
 import { IResourceComponentsProps } from "@refinedev/core/dist/contexts/resource";
 import React, { useState } from "react";
 
@@ -22,13 +27,16 @@ import { IDevice } from "../../interfaces";
 import { Breadcrumb, Show } from "@refinedev/mui";
 import LatestTelemetryTable from "../../components/telemetry/LatestTelemetryTable";
 import { CustomLinkField } from "../../components/customLinkField";
+import { MQTT_BROKER_ADDRESS, MQTT_PORT } from "../../constant";
 
 export const DeviceShow: React.FC<IResourceComponentsProps> = () => {
   const { id } = useParsed();
   const apiUrl = useApiUrl();
   const { show } = useNavigation();
-  const [activeTab, setActiveTab] = useState("1");
+  const [detailActiveTab, setDetailActiveTab] = useState("1");
+  const [connectivityActiveTab, setConnectivityActiveTab] = useState("1");
   const [copiedId, setCopiedId] = useState(false);
+  const [copiedCommand, setCopiedCommand] = useState(false);
   const [checkConnectivityDialogOpen, setCheckConnectivityDialogOpen] =
     useState(false);
 
@@ -37,11 +45,18 @@ export const DeviceShow: React.FC<IResourceComponentsProps> = () => {
   } = useShow<IDevice>();
   const device_data = devices?.data;
 
-  const handleTabChange = (
+  const handleDetailTabChange = (
     event: React.SyntheticEvent,
     newTabIndex: string
   ) => {
-    setActiveTab(newTabIndex);
+    setDetailActiveTab(newTabIndex);
+  };
+
+  const handleConnectivityTabChange = (
+    event: React.SyntheticEvent,
+    newTabIndex: string
+  ) => {
+    setConnectivityActiveTab(newTabIndex);
   };
 
   return (
@@ -59,10 +74,10 @@ export const DeviceShow: React.FC<IResourceComponentsProps> = () => {
       >
         <Paper>
           <List sx={{ paddingX: { xs: 2, md: 0 }, flex: 1 }}>
-            <TabContext value={activeTab}>
+            <TabContext value={detailActiveTab}>
               <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                 <TabList
-                  onChange={handleTabChange}
+                  onChange={handleDetailTabChange}
                   aria-label="lab API tabs example"
                 >
                   <Tab label="Details" value="1" />
@@ -171,22 +186,129 @@ export const DeviceShow: React.FC<IResourceComponentsProps> = () => {
 
         {/* Copy to clipboard snackbar */}
         <Snackbar
-          open={copiedId}
-          autoHideDuration={5000}
+          open={copiedId || copiedCommand}
+          autoHideDuration={3000}
           onClose={(event?: React.SyntheticEvent | Event, reason?: string) => {
             setCopiedId(false);
+            setCopiedCommand(false);
           }}
         >
           <Alert severity="success" sx={{ width: "100%" }}>
-            Copied Device ID to clipboard
+            Copied to clipboard
           </Alert>
         </Snackbar>
         {/*Check Conectivity Dialog*/}
         <Dialog
           open={checkConnectivityDialogOpen}
           onClose={() => setCheckConnectivityDialogOpen(false)}
+          PaperProps={{ sx: { minWidth: "800px" } }}
         >
-          <DialogTitle>Check Device Connectivity</DialogTitle>
+          <DialogTitle fontWeight={700}>Check Device Connectivity</DialogTitle>
+          <DialogContent>
+            <Stack direction={"column"} sx={{ flex: 1 }}>
+              <TabContext value={connectivityActiveTab}>
+                <TabList
+                  onChange={handleConnectivityTabChange}
+                  aria-label="lab API tabs example 1"
+                >
+                  <Tab label="Windows" value="1" />
+                  <Tab label="Linux" value="2" />
+                </TabList>
+
+                <TabPanel value="1" sx={{ p: 0 }}>
+                  <Paper sx={{ padding: 2, my: 2 }}>
+                    <Typography variant="body1" fontWeight={700} sx={{ mb: 2 }}>
+                      Install necessary client tools
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      Install necessary MQTT client tools, you can use tool like
+                      <Link href="https://mosquitto.org/" target="_blank">
+                        {" "}
+                        mosquitto{" "}
+                      </Link>
+                    </Typography>
+                  </Paper>
+                  <Paper sx={{ padding: 2, my: 2 }}>
+                    <Typography variant="body1" fontWeight={700} sx={{ mb: 2 }}>
+                      Execute the following command
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      defaultValue={`mosquitto_pub -d -q 1 -h ${MQTT_BROKER_ADDRESS} -p ${MQTT_PORT} -t devices/${device_data?.device_id}/telemetry -m '{"temperature":25}'`}
+                      InputProps={{
+                        readOnly: true,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `mosquitto_pub -d -q 1 -h ${MQTT_BROKER_ADDRESS} -p ${MQTT_PORT} -t devices/${device_data?.device_id}/telemetry -m '{"temperature":25}'`
+                                );
+                                setCopiedCommand(true);
+                              }}
+                              edge="end"
+                            >
+                              <FileCopyOutlined />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Paper>
+                </TabPanel>
+                <TabPanel value="2" sx={{ p: 0 }}>
+                  <Paper sx={{ padding: 2, my: 2 }}>
+                    <Typography variant="body1" fontWeight={700} sx={{ mb: 2 }}>
+                      Install necessary client tools
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      defaultValue="sudo apt-get install curl mosquitto-clients"
+                      InputProps={{
+                        readOnly: true,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => {}} edge="end">
+                              <FileCopyOutlined />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Paper>
+                  <Paper sx={{ padding: 2, my: 2 }}>
+                    <Typography variant="body1" fontWeight={700} sx={{ mb: 2 }}>
+                      Execute the following command
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      defaultValue={`mosquitto_pub -d -q 1 -h 127.0.0.1 -p 1883 -t devices/${device_data?.device_id}/telemetry -m '{"temperature":25}'`}
+                      InputProps={{
+                        readOnly: true,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => {}} edge="end">
+                              <FileCopyOutlined />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Paper>
+                </TabPanel>
+              </TabContext>
+
+              <Paper sx={{ padding: 2, my: 2 }}>
+                <LatestTelemetryTable
+                  entity_id={id ? id.toString() : ""}
+                  entity_type={"devices"}
+                />
+              </Paper>
+            </Stack>
+          </DialogContent>
         </Dialog>
       </Show>
     </>

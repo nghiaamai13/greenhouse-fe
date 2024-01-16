@@ -7,7 +7,7 @@ import { darken } from "@mui/material";
 import mqtt from "mqtt";
 import moment from "moment";
 import { Box } from "@mui/system";
-import { MQTT_BROKER_ADDRESS } from "../../../constant";
+import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
 
 const TSCard: React.FC<StreamProps> = ({
   asset_id,
@@ -20,7 +20,9 @@ const TSCard: React.FC<StreamProps> = ({
   const [lastUpdated, setLastUpdated] = useState<moment.Moment | null>(null);
 
   useEffect(() => {
-    const client = mqtt.connect(MQTT_BROKER_ADDRESS);
+    const client = mqtt.connect(
+      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
+    );
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");

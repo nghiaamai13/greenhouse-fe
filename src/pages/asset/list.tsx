@@ -37,16 +37,6 @@ export const AssetList: React.FC<IResourceComponentsProps> = () => {
   const { mutate: mutateDeleteMany } = useDeleteMany<IAsset>();
   const { data: role } = usePermissions();
 
-  const { dataGridProps } = useDataGrid<IAsset>({
-    initialPageSize: 10,
-    pagination: {
-      mode: "client",
-    },
-    filters: {
-      mode: "off",
-    },
-  });
-
   const createDrawerFormProps = useModalForm<
     IAssetCreate,
     HttpError,
@@ -72,6 +62,16 @@ export const AssetList: React.FC<IResourceComponentsProps> = () => {
   const {
     modal: { show: showEditDrawer },
   } = editDrawerFormProps;
+
+  const { dataGridProps } = useDataGrid<IAsset>({
+    initialPageSize: 10,
+    pagination: {
+      mode: "client",
+    },
+    filters: {
+      mode: "off",
+    },
+  });
 
   const columns = React.useMemo<GridColDef<IAsset>[]>(
     () => [
@@ -137,7 +137,6 @@ export const AssetList: React.FC<IResourceComponentsProps> = () => {
 
   const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
   const handleSelectionModelChange = (selectionModel: string[]) => {
-    console.log("Selected Rows:", selectionModel);
     setSelectedRows(selectionModel);
   };
 
@@ -225,7 +224,7 @@ export const AssetList: React.FC<IResourceComponentsProps> = () => {
           aria-labelledby="delete-confirmation-dialog-title"
         >
           <DialogTitle id="delete-confirmation-dialog-title">
-            Delete {selectedRows.length} Farms
+            Delete {selectedRows.length} Assets
           </DialogTitle>
           <DialogContent>
             <p>Are you sure you want to delete the selected assets?</p>

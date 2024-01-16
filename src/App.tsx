@@ -74,7 +74,6 @@ const App: React.FC = () => {
     } else if (scope === "customer") {
       setCustomerResources(true);
     }
-    console.log(customerResources);
   }, [scope]);
 
   const axiosInstance = axios.create();

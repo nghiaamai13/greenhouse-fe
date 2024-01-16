@@ -176,7 +176,7 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
           columns={thresholdColumns}
           autoHeight
           disableRowSelectionOnClick
-          pageSizeOptions={[5]}
+          pageSizeOptions={[10, 25, 50]}
           density="standard"
           sx={{
             "& .MuiDataGrid-cell:hover": {
