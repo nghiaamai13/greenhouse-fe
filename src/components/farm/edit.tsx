@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { useTranslate, useApiUrl, HttpError } from "@refinedev/core";
+import { useTranslate, useApiUrl, HttpError, useParsed } from "@refinedev/core";
 import { UseModalFormReturnType } from "@refinedev/react-hook-form";
 import { Controller } from "react-hook-form";
 import { Edit, useAutocomplete } from "@refinedev/mui";
@@ -20,6 +20,7 @@ import TextField from "@mui/material/TextField";
 import CloseOutlined from "@mui/icons-material/CloseOutlined";
 
 import { ICustomer, IFarm, Nullable } from "../../interfaces";
+import LocationPicker from "./LocationPicker";
 
 export const EditFarm: React.FC<
   UseModalFormReturnType<IFarm, HttpError, Nullable<IFarm>>
@@ -31,10 +32,13 @@ export const EditFarm: React.FC<
   modal: { visible, close },
   saveButtonProps,
   control,
+  getValues,
+  setValue,
 }) => {
   const { autocompleteProps } = useAutocomplete<ICustomer>({
     resource: "customers",
   });
+
   return (
     <Drawer
       sx={{ zIndex: "1301" }}
@@ -98,6 +102,51 @@ export const EditFarm: React.FC<
                     maxRows={5}
                   />
                 </FormControl>
+                <FormControl>
+                  <Stack direction="row" spacing={2}>
+                    <TextField
+                      {...register("location.0", {
+                        required: "This field is required",
+                        pattern: {
+                          value: /^-?\d+(\.\d+)?$/,
+                          message: "Please enter a valid number",
+                        },
+                      })}
+                      defaultValue={getValues("location.0")}
+                      error={!!errors.location?.[0]}
+                      helperText={errors.location?.[0]?.message}
+                      label="Latitude"
+                      name="location.0"
+                    />
+                    <TextField
+                      {...register("location.1", {
+                        required: "This field is required",
+                        pattern: {
+                          value: /^-?\d+(\.\d+)?$/,
+                          message: "Please enter a valid number",
+                        },
+                      })}
+                      defaultValue={getValues("location.1")}
+                      error={!!errors.location?.[1]}
+                      helperText={errors.location?.[1]?.message}
+                      label="Longitude"
+                      name="location.1"
+                    />
+                  </Stack>
+                  {errors.location && (
+                    <FormHelperText error>
+                      {errors.location.message}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+                <LocationPicker
+                  lat={getValues("location.0")}
+                  lng={getValues("location.1")}
+                  onChange={(newLocation) => {
+                    setValue("location.0", newLocation.lat);
+                    setValue("location.1", newLocation.lng);
+                  }}
+                />
                 <FormControl>
                   <Controller
                     control={control}

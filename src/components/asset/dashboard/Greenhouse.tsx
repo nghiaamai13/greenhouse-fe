@@ -31,8 +31,8 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
     <Stack>
       <Paper sx={{ padding: "20px", my: "20px" }}>
         <Typography variant="h6">{name}</Typography>
-        <Grid container spacing={2} columns={16} mb={"25px"}>
-          <Grid item xs={16} md={8} lg={4}>
+        <Grid container spacing={2} columns={12} mb={"25px"}>
+          <Grid item xs={12} md={6} lg={4}>
             <TSLineChart
               asset_id={asset_id}
               color="#EBE76C"
@@ -40,7 +40,7 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
               dataUnit="°C"
             />
           </Grid>
-          <Grid item xs={16} md={8} lg={4}>
+          <Grid item xs={12} md={6} lg={4}>
             <TSLineChart
               asset_id={asset_id}
               color="#F0B86E"
@@ -48,16 +48,13 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
               dataUnit="%"
             />
           </Grid>
-          <Grid item xs={16} md={8} lg={4}>
+          <Grid item xs={12} md={6} lg={4}>
             <TSLineChart
               asset_id={asset_id}
               color="#836096"
               dataKey="light intensity"
               dataUnit="Lux"
             />
-          </Grid>
-          <Grid item xs={16} md={8} lg={4}>
-            <TSLineChart asset_id={asset_id} color="#ED7B7B" dataKey="pH" />
           </Grid>
         </Grid>
 

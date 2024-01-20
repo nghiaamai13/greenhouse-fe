@@ -88,6 +88,14 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
         flex: 1,
       },
       {
+        field: "location",
+        headerName: "Location",
+        flex: 1,
+        renderCell(params) {
+          return `[${params.row.location[0]}, ${params.row.location[1]}]`;
+        },
+      },
+      {
         field: "created_at",
         headerName: "Created Time",
         flex: 1,
@@ -97,22 +105,12 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
       },
       {
         field: "customer",
-        headerName: "Customer",
+        headerName: "Assign To",
         flex: 1,
         valueGetter: ({ value }) => value?.username,
         renderCell: function render({ row }) {
           return (
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "left",
-              }}
-            >
-              <Typography>{row.customer?.username}</Typography>
-            </Box>
+            <Typography color={"primary"}>{row.customer?.username}</Typography>
           );
         },
       },

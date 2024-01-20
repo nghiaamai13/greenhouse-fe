@@ -1,6 +1,7 @@
 import { Token } from "@mui/icons-material";
 import { AuthBindings } from "@refinedev/core";
 import { JwtPayload, jwtDecode } from "jwt-decode";
+import { API_URL } from "./constant";
 export const TOKEN_KEY = "access_token";
 
 interface DecodedToken {
@@ -13,7 +14,7 @@ interface DecodedToken {
 export const authProvider: AuthBindings = {
   login: async ({ username, password }) => {
     if (username && password) {
-      const response = await fetch("http://localhost:8000/api/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

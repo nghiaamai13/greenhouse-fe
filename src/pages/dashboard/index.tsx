@@ -1,6 +1,11 @@
 import React from "react";
-import { Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
+import { FarmListMap } from "../../components/dashboard";
 
 export const DashboardPage: React.FC = () => {
-  return <Stack sx={{ flex: 1, flexDirection: "row" }}>DashboardPage</Stack>;
+  return (
+    <Box sx={{ height: "800px", width: "1000px" }}>
+      <FarmListMap />
+    </Box>
+  );
 };

@@ -7,12 +7,10 @@ const DateTimeCard: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   useEffect(() => {
-    // Update currentDateTime every second
     const intervalId = setInterval(() => {
       setCurrentDateTime(new Date());
     }, 1000);
 
-    // Cleanup the interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
@@ -30,7 +28,6 @@ const DateTimeCard: React.FC = () => {
   const formatTime = (date: Date) => {
     const options = { hour: "numeric", minute: "numeric", second: "numeric" };
     //@ts-ignore
-
     return date.toLocaleTimeString(undefined, options);
   };
 

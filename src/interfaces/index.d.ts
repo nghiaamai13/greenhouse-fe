@@ -22,6 +22,7 @@ export interface IFarm {
   farm_id: string;
   descriptions: string;
   name: string;
+  location: [number, number];
   created_at: string;
   owner: Object[ICustomer];
   customer: Object[ICustomer];
