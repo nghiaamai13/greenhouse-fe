@@ -17,12 +17,16 @@ interface LocationPickerProps {
   onChange: (location: LatLngLiteral) => void;
   lat?: number;
   lng?: number;
+  searchable?: boolean;
+  changeable?: boolean;
 }
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   onChange,
   lat,
   lng,
+  searchable = true,
+  changeable = true,
 }) => {
   const mapRef = useRef<any>(null);
   const [location, setLocation] = useState<LatLngLiteral>({
@@ -42,6 +46,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   const MapClickHandler: React.FC = () => {
     const map = useMapEvents({
       click: (e) => {
+        if (!changeable) {
+          return;
+        }
         const { lat, lng } = e.latlng;
         const roundedLocation = { lat: +lat.toFixed(6), lng: +lng.toFixed(6) };
         setLocation(roundedLocation);
@@ -91,26 +98,28 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   return (
     <Stack direction={"column"} spacing={2}>
-      <Paper
-        sx={{
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <InputBase
-          sx={{ ml: 1, flex: 1 }}
-          placeholder="Search for location"
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <IconButton sx={{ p: "10px" }} onClick={handleSearch}>
-          <SearchIcon />
-        </IconButton>
-      </Paper>
+      {searchable && (
+        <Paper
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <InputBase
+            sx={{ ml: 1, flex: 1 }}
+            placeholder="Search for location"
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <IconButton sx={{ p: "10px" }} onClick={handleSearch}>
+            <SearchIcon />
+          </IconButton>
+        </Paper>
+      )}
 
       <MapContainer
         center={[location.lat, location.lng]}
         zoom={8}
-        style={{ height: "400px", width: "100%" }}
+        style={{ height: "470px", width: "100%" }}
         ref={mapRef}
       >
         <TileLayer

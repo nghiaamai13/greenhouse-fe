@@ -11,25 +11,30 @@ import {
   TextField,
   Stack,
   Grid,
+  IconButton,
+  Dialog,
 } from "@mui/material";
 import { useApiUrl, useCustom, useParsed, useShow } from "@refinedev/core";
 
+import MapIcon from "@mui/icons-material/Map";
 import { IResourceComponentsProps } from "@refinedev/core/dist/contexts/resource";
 import React, { useState } from "react";
 
 import { IAsset, IFarm } from "../../interfaces";
 import { Breadcrumb, Show } from "@refinedev/mui";
-import { GridColDef } from "@mui/x-data-grid";
 import OutdoorField from "../../components/asset/dashboard/OutdoorField";
 import Greenhouse from "../../components/asset/dashboard/Greenhouse";
 import DeviceTable from "../../components/farm/DeviceTable";
 import AssetTable from "../../components/farm/AssetTable";
+import LocationPicker from "../../components/farm/LocationPicker";
+import { CustomTooltip } from "../../components";
 
 export const FarmShow: React.FC<IResourceComponentsProps> = () => {
   const { id } = useParsed();
   const apiUrl = useApiUrl();
   const [activeTab, setActiveTab] = useState("1");
   const [copiedId, setCopiedId] = useState(false);
+  const [openMapDialog, setOpenMapDialog] = useState(false);
 
   const {
     queryResult: { data: farm },
@@ -136,6 +141,27 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                         }}
                       />
                       <TextField
+                        label="Location"
+                        focused={true}
+                        value={farm_data?.location || ""}
+                        fullWidth
+                        variant="filled"
+                        margin="normal"
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
+                            <CustomTooltip title="Show on map">
+                              <IconButton
+                                color="primary"
+                                onClick={() => setOpenMapDialog(true)}
+                              >
+                                <MapIcon />
+                              </IconButton>
+                            </CustomTooltip>
+                          ),
+                        }}
+                      />
+                      <TextField
                         label="Assigned Customer"
                         focused={true}
                         value={farm_data?.customer?.username}
@@ -233,6 +259,26 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
         >
           <Alert severity="success">Copied Farm ID to clipboard</Alert>
         </Snackbar>
+
+        <Dialog
+          open={openMapDialog}
+          onClose={() => setOpenMapDialog(false)}
+          PaperProps={{
+            sx: {
+              width: "500px",
+              height: "500px",
+              p: 2,
+            },
+          }}
+        >
+          <LocationPicker
+            lat={farm_data?.location[0]}
+            lng={farm_data?.location[1]}
+            searchable={false}
+            changeable={false}
+            onChange={() => {}}
+          />
+        </Dialog>
       </Show>
     </>
   );

@@ -22,6 +22,29 @@ import { Close, FormatAlignLeft } from "@mui/icons-material";
 import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
 import mqtt from "mqtt";
 
+type GreenhouseAction = {
+  id: number;
+  name: string;
+  payload: Object;
+};
+
+const controlTemplates: GreenhouseAction[] = [
+  {
+    id: 1,
+    name: "Turn On",
+    payload: {
+      on: true,
+    },
+  },
+  {
+    id: 2,
+    name: "Turn Off",
+    payload: {
+      off: true,
+    },
+  },
+];
+
 interface GreenhouseControlDialogProps {
   asset_id: string;
   open: boolean;
@@ -38,6 +61,7 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
     control,
     formState: { errors },
     handleSubmit,
+    getValues,
     setValue,
     reset,
   } = useForm<IDeviceControl, HttpError, Nullable<IDeviceControl>>();
@@ -69,10 +93,35 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
     });
   };
 
+  const handleAutocompleteChange = (_: any, value: GreenhouseAction | null) => {
+    const currentJsonData = JSON.parse(getValues("json_data") || "{}");
+    const { duration } = currentJsonData;
+    const newJsonValue = {
+      ...(value ? value.payload : {}),
+      ...(duration !== undefined ? { duration } : {}),
+    };
+
+    setValue("json_data", JSON.stringify(newJsonValue));
+  };
+
+  const handleDurationChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const currentJsonData = JSON.parse(getValues("json_data") || "{}");
+    const newJsonValue = {
+      ...currentJsonData,
+      duration: parseInt(e.target.value) * 1000,
+    };
+    setValue("json_data", JSON.stringify(newJsonValue));
+  };
+
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        setValue("json_data", "");
+        onClose();
+      }}
       PaperProps={{ sx: { minWidth: "500px" } }}
     >
       <DialogTitle fontWeight={700}>Controls</DialogTitle>
@@ -89,7 +138,7 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
         <Close />
       </IconButton>
       <Box p={3}>
-        <form onSubmit={handleSubmit(handleSendControl)}>
+        <form onSubmit={handleSubmit(handleSendControl)} noValidate>
           <Stack gap="10px">
             <FormControl>
               <Controller
@@ -115,6 +164,7 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
                     renderInput={(params) => (
                       <TextField
                         {...params}
+                        focused
                         label="Device"
                         margin="normal"
                         variant="outlined"
@@ -127,6 +177,33 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
                 )}
               ></Controller>
             </FormControl>
+            <Autocomplete
+              disablePortal
+              id="control-options"
+              options={controlTemplates}
+              getOptionLabel={(option) => option.name}
+              renderInput={(params) => <TextField {...params} label="Action" />}
+              onChange={(_, value) => {
+                handleAutocompleteChange(_, value);
+              }}
+              isOptionEqualToValue={(option, value) => {
+                return option.id === value?.id;
+              }}
+            />
+            <TextField
+              sx={{ mt: "10px" }}
+              type="number"
+              label="Duration in seconds"
+              onChange={(e) => {
+                handleDurationChange(e);
+              }}
+              InputProps={{
+                inputProps: { min: 0, step: 1 },
+                inputMode: "numeric",
+              }}
+              helperText="Provide the action and duration in seconds to fill the json data"
+            />
+
             <FormControl sx={{ mb: 2 }}>
               <Controller
                 name="json_data"
@@ -151,6 +228,8 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
                     error={!!errors.json_data}
                     helperText={errors.json_data?.message}
                     multiline
+                    focused
+                    placeholder="This data will be sent to the device"
                     rows={8}
                     margin="normal"
                     fullWidth

@@ -11,9 +11,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ThresholdTable from "./ThresholdTable";
 import CloseIcon from "@mui/icons-material/Close";
-import GreenhouseControl from "./GreenhouseControl";
 import GreenhouseControlDialog from "./GreenhouseControl";
 import { CustomTooltip } from "../../customTooltip";
 
@@ -27,36 +28,67 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
   const [controlDialogOpen, setControlDialogOpen] = useState(false);
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
 
+  const [expanded, setExpanded] = useState(false);
+
+  const handleToggleExpand = () => {
+    setExpanded(!expanded);
+  };
+
+  const initialData = [
+    { dataKey: "temperature", color: "#EBE76C", dataUnit: "°C" },
+    { dataKey: "humidity", color: "#F0B86E", dataUnit: "%" },
+    { dataKey: "light_intensity", color: "#836096", dataUnit: "Lux" },
+    // { dataKey: "dataKey4", color: "#FF5733", dataUnit: "Unit4" },
+    // { dataKey: "dataKey5", color: "#33FF57", dataUnit: "Unit5" },
+    // { dataKey: "dataKey6", color: "#5733FF", dataUnit: "Unit6" },
+    // { dataKey: "dataKey7", color: "#FF33B8", dataUnit: "Unit7" },
+    // { dataKey: "dataKey8", color: "#33B8FF", dataUnit: "Unit8" },
+    // { dataKey: "dataKey8", color: "#33B8AA", dataUnit: "Unit9" },
+  ];
+
+  const totalCharts = initialData.length;
+  const chartsToRender = expanded ? initialData : initialData.slice(0, 4);
+
   return (
     <Stack>
       <Paper sx={{ padding: "20px", my: "20px" }}>
         <Typography variant="h6">{name}</Typography>
-        <Grid container spacing={2} columns={12} mb={"25px"}>
-          <Grid item xs={12} md={6} lg={4}>
-            <TSLineChart
-              asset_id={asset_id}
-              color="#EBE76C"
-              dataKey="temperature"
-              dataUnit="°C"
-            />
-          </Grid>
-          <Grid item xs={12} md={6} lg={4}>
-            <TSLineChart
-              asset_id={asset_id}
-              color="#F0B86E"
-              dataKey="humidity"
-              dataUnit="%"
-            />
-          </Grid>
-          <Grid item xs={12} md={6} lg={4}>
-            <TSLineChart
-              asset_id={asset_id}
-              color="#836096"
-              dataKey="light intensity"
-              dataUnit="Lux"
-            />
-          </Grid>
+        <Grid container spacing={2} columns={16}>
+          {chartsToRender.map((data, index) => (
+            <Grid
+              item
+              key={index}
+              xs={16}
+              md={8}
+              lg={4}
+              style={{ display: "block" }}
+            >
+              <TSLineChart
+                key={index}
+                asset_id={asset_id}
+                color={data.color}
+                dataKey={data.dataKey}
+                dataUnit={data.dataUnit}
+              />
+            </Grid>
+          ))}
         </Grid>
+
+        {totalCharts > 4 && (
+          <Stack direction="row" justifyContent="flex-end">
+            <IconButton onClick={handleToggleExpand} color="primary">
+              {expanded ? (
+                <CustomTooltip title="Show Less">
+                  <ExpandLessIcon />
+                </CustomTooltip>
+              ) : (
+                <CustomTooltip title="Show More">
+                  <ExpandMoreIcon />
+                </CustomTooltip>
+              )}
+            </IconButton>
+          </Stack>
+        )}
 
         <Stack direction={"row"} sx={{ flex: 1, gap: "10px" }}>
           <CustomTooltip title="Set Thresholds">

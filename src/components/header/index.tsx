@@ -51,9 +51,9 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
             >
               {mode === "dark" ? <LightModeOutlined /> : <DarkModeOutlined />}
             </IconButton>
-            <IconButton color="inherit">
+            {/* <IconButton color="inherit">
               <NotificationsNoneIcon></NotificationsNoneIcon>
-            </IconButton>
+            </IconButton> */}
 
             {(user?.avatar || user?.name) && (
               <Stack

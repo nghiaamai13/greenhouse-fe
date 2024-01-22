@@ -14,7 +14,7 @@ import {
 import { useApiUrl, useNavigation, useParsed, useShow } from "@refinedev/core";
 
 import { IResourceComponentsProps } from "@refinedev/core/dist/contexts/resource";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 
 import { IAsset } from "../../interfaces";
 import { Breadcrumb, Show } from "@refinedev/mui";

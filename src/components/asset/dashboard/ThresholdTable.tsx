@@ -119,8 +119,11 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
         onError: (error, variables, context) => {
           console.log("Error Adding Threshold: ", error);
         },
-        onSuccess: (data, variables, context) => {
+        onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["asset_thresholds"] });
+          queryClient.invalidateQueries({
+            queryKey: [`${asset_id}_thresholds_${data.key}`],
+          });
           handleCloseThresholdAdd();
           openNotification?.({
             type: "success",
