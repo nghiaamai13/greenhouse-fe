@@ -49,6 +49,7 @@ const TSCard: React.FC<StreamProps> = ({
   return (
     <Card
       style={{
+        flexShrink: 0,
         width: "150px",
         height: "200px",
         display: "flex",

@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  Link,
   Paper,
   Stack,
   Typography,
@@ -17,6 +18,7 @@ import ThresholdTable from "./ThresholdTable";
 import CloseIcon from "@mui/icons-material/Close";
 import GreenhouseControlDialog from "./GreenhouseControl";
 import { CustomTooltip } from "../../customTooltip";
+import { useNavigation } from "@refinedev/core";
 
 interface GreenhouseProps {
   asset_id: string;
@@ -24,6 +26,7 @@ interface GreenhouseProps {
 }
 
 const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
+  const { show } = useNavigation();
   const [thresholdDialogOpen, setThresholdDialogOpen] = useState(false);
   const [controlDialogOpen, setControlDialogOpen] = useState(false);
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
@@ -35,10 +38,33 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
   };
 
   const initialData = [
-    { dataKey: "temperature", color: "#EBE76C", dataUnit: "°C" },
-    { dataKey: "humidity", color: "#F0B86E", dataUnit: "%" },
-    { dataKey: "light_intensity", color: "#836096", dataUnit: "Lux" },
-    // { dataKey: "dataKey4", color: "#FF5733", dataUnit: "Unit4" },
+    {
+      dataKey: "temperature",
+      color: "#EBE76C",
+      dataUnit: "°C",
+      yMin: 0,
+      yMax: 100,
+    },
+    {
+      dataKey: "humidity",
+      color: "#F0B86E",
+      dataUnit: "%",
+      yMin: 0,
+      yMax: 100,
+    },
+    {
+      dataKey: "light_intensity",
+      color: "#836096",
+      dataUnit: "Lux",
+      yMin: 100,
+      yMax: 1000,
+    },
+    {
+      dataKey: "pH",
+      color: "#33AC57",
+      yMin: 0.0,
+      yMax: 10.0,
+    },
     // { dataKey: "dataKey5", color: "#33FF57", dataUnit: "Unit5" },
     // { dataKey: "dataKey6", color: "#5733FF", dataUnit: "Unit6" },
     // { dataKey: "dataKey7", color: "#FF33B8", dataUnit: "Unit7" },
@@ -52,7 +78,14 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
   return (
     <Stack>
       <Paper sx={{ padding: "20px", my: "20px" }}>
-        <Typography variant="h6">{name}</Typography>
+        <Link
+          onClick={() => show("assets", asset_id)}
+          sx={{ cursor: "pointer", ":hover": { color: "primary.main" } }}
+          underline="none"
+          color={"inherit"}
+        >
+          <Typography variant="h6">{name}</Typography>
+        </Link>
         <Grid container spacing={2} columns={16}>
           {chartsToRender.map((data, index) => (
             <Grid
@@ -69,6 +102,8 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
                 color={data.color}
                 dataKey={data.dataKey}
                 dataUnit={data.dataUnit}
+                yMin={data.yMin || 0}
+                yMax={data.yMax || 100}
               />
             </Grid>
           ))}

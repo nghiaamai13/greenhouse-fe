@@ -30,7 +30,7 @@ export const FarmListMap: React.FC = () => {
       ) : (
         <MapContainer
           center={farmData.data[0].location as LatLngExpression}
-          zoom={10}
+          zoom={12}
           style={{ height: "100%", width: "100%" }}
         >
           <TileLayer

@@ -235,7 +235,7 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
                     setAssignDialogOpen(true);
                   }}
                 >
-                  Assign Devices
+                  Assign Farms
                 </EditButton>
                 <DeleteButton
                   onClick={handleDelete}

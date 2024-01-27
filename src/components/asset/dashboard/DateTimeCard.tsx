@@ -34,6 +34,7 @@ const DateTimeCard: React.FC = () => {
   return (
     <Card
       style={{
+        flexShrink: 0,
         height: "200px",
         maxWidth: "150px",
         display: "flex",

@@ -40,9 +40,16 @@ import { AssetList } from "./pages/asset";
 import { API_URL } from "./constant";
 import { AssetShow } from "./pages/asset/show";
 import { DeviceShow } from "./pages/device/show";
+import { TenantList } from "./pages/tenant";
+
+enum Resources {
+  TENANT = "tenant",
+  ADMIN = "admin",
+  CUSTOMER = "customer",
+}
 
 const App: React.FC = () => {
-  const [customerResources, setCustomerResources] = useState<boolean>(false);
+  const [resources, setResources] = useState<string>(Resources.TENANT);
   const [scope, setScope] = useState(localStorage.getItem("currentUserScope"));
   //@ts-ignore
   const customTitleHandler = ({ resource }) => {
@@ -70,9 +77,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (scope === "tenant") {
-      setCustomerResources(false);
+      setResources(Resources.TENANT);
     } else if (scope === "customer") {
-      setCustomerResources(true);
+      setResources(Resources.CUSTOMER);
+    } else if (scope === "admin") {
+      setResources(Resources.ADMIN);
     }
   }, [scope]);
 
@@ -123,19 +132,26 @@ const App: React.FC = () => {
                   meta: {
                     label: "Dashboard",
                     icon: <Dashboard />,
+                    hide: resources === Resources.ADMIN,
                   },
                 },
                 {
                   name: "farms",
                   list: "/farms",
                   show: "/farms/:id",
-                  meta: { icon: <AgricultureOutlinedIcon /> },
+                  meta: {
+                    icon: <AgricultureOutlinedIcon />,
+                    hide: resources === Resources.ADMIN,
+                  },
                 },
                 {
                   name: "assets",
                   list: "/assets",
                   show: "/assets/:id",
-                  meta: { icon: <StoreOutlined /> },
+                  meta: {
+                    icon: <StoreOutlined />,
+                    hide: resources === Resources.ADMIN,
+                  },
                 },
                 {
                   name: "device_profiles",
@@ -143,20 +159,32 @@ const App: React.FC = () => {
                   meta: {
                     icon: <CategoryOutlined />,
                     label: "Device Profiles",
+                    hide: resources !== Resources.TENANT,
                   },
                 },
                 {
                   name: "devices",
                   list: "/devices",
                   show: "/devices/:id",
-                  meta: { icon: <DeviceThermostatIcon /> },
+                  meta: {
+                    icon: <DeviceThermostatIcon />,
+                    hide: resources === Resources.ADMIN,
+                  },
                 },
                 {
                   name: "customers",
                   list: "/customers",
                   meta: {
                     icon: <PeopleOutlineOutlined />,
-                    hide: customerResources,
+                    hide: resources !== Resources.TENANT,
+                  },
+                },
+                {
+                  name: "tenants",
+                  list: "/tenants",
+                  meta: {
+                    icon: <PeopleOutlineOutlined />,
+                    hide: resources !== Resources.ADMIN,
                   },
                 },
               ]}
@@ -175,29 +203,42 @@ const App: React.FC = () => {
                   }
                 >
                   {scope === "tenant" && (
-                    <Route path="customers">
-                      <Route index element={<CustomerList />} />
-                    </Route>
+                    <>
+                      <Route path="device_profiles">
+                        <Route index element={<DeviceProfileList />} />
+                      </Route>
+                      <Route path="customers">
+                        <Route index element={<CustomerList />} />
+                      </Route>
+                    </>
                   )}
 
-                  <Route path="">
-                    <Route index element={<DashboardPage />} />
-                  </Route>
-                  <Route path="farms">
-                    <Route index element={<FarmList />} />
-                    <Route path=":id" element={<FarmShow />} />
-                  </Route>
-                  <Route path="assets">
-                    <Route index element={<AssetList />} />
-                    <Route path=":id" element={<AssetShow />} />
-                  </Route>
-                  <Route path="device_profiles">
-                    <Route index element={<DeviceProfileList />} />
-                  </Route>
-                  <Route path="devices">
-                    <Route index element={<DeviceList />} />
-                    <Route path=":id" element={<DeviceShow />} />
-                  </Route>
+                  {scope !== "admin" && (
+                    <>
+                      <Route path="">
+                        <Route index element={<DashboardPage />} />
+                      </Route>
+                      <Route path="farms">
+                        <Route index element={<FarmList />} />
+                        <Route path=":id" element={<FarmShow />} />
+                      </Route>
+                      <Route path="assets">
+                        <Route index element={<AssetList />} />
+                        <Route path=":id" element={<AssetShow />} />
+                      </Route>
+
+                      <Route path="devices">
+                        <Route index element={<DeviceList />} />
+                        <Route path=":id" element={<DeviceShow />} />
+                      </Route>
+                    </>
+                  )}
+
+                  {scope === "admin" && (
+                    <Route path="tenants">
+                      <Route index element={<TenantList />} />
+                    </Route>
+                  )}
 
                   <Route path="*" element={<ErrorComponent />} />
                 </Route>
