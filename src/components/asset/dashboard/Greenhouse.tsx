@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TSLineChart from "./TSLineChart";
 import {
   Box,
@@ -12,13 +12,26 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ThresholdTable from "./ThresholdTable";
 import CloseIcon from "@mui/icons-material/Close";
 import GreenhouseControlDialog from "./GreenhouseControl";
 import { CustomTooltip } from "../../customTooltip";
-import { useNavigation } from "@refinedev/core";
+import {
+  useApiUrl,
+  useCustom,
+  useCustomMutation,
+  useNavigation,
+  useNotification,
+} from "@refinedev/core";
+import mqtt from "mqtt";
+import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
+import { TSKey } from "../../../interfaces";
+import { useQueryClient } from "@tanstack/react-query";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { tsDataConfig as dataConfig } from "../../../constant";
 
 interface GreenhouseProps {
   asset_id: string;
@@ -30,50 +43,117 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
   const [thresholdDialogOpen, setThresholdDialogOpen] = useState(false);
   const [controlDialogOpen, setControlDialogOpen] = useState(false);
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
-
+  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const queryClient = useQueryClient();
+  const apiUrl = useApiUrl();
+
+  const mqtt_topic = `assets/${asset_id}/telemetry`;
+  const [mqttData, setMqttData] = useState<{ [dataKey: string]: number }>({});
+  const { data: keyData, isLoading: keyIsLoading } = useCustom<TSKey[]>({
+    url: `${apiUrl}/assets/${asset_id}/keys`,
+    method: "get",
+    queryOptions: {
+      queryKey: [`${asset_id}_chart_keys`],
+    },
+  });
+
+  const keys: string[] = keyData?.data.map((data) => data.ts_key) || [];
+
+  useEffect(() => {
+    const client = mqtt.connect(
+      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
+    );
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT broker");
+      client.subscribe(mqtt_topic);
+    });
+
+    client.on("message", (topic, message) => {
+      console.log(`Received message on topic ${topic}: ${message.toString()}`);
+      const receivedData = JSON.parse(message.toString());
+      const newKeys = Object.keys(receivedData).filter(
+        (key) => !keys.includes(key)
+      );
+      if (newKeys.length > 0) {
+        queryClient.invalidateQueries({
+          queryKey: [`${asset_id}_chart_keys`],
+        });
+      }
+      setMqttData(receivedData);
+    });
+
+    return () => {
+      if (client.connected) {
+        client.unsubscribe(mqtt_topic);
+        client.end();
+      }
+    };
+  }, [mqtt_topic]);
 
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
 
-  const initialData = [
-    {
-      dataKey: "temperature",
-      color: "#EBE76C",
-      dataUnit: "°C",
-      yMin: 0,
-      yMax: 100,
-    },
-    {
-      dataKey: "humidity",
-      color: "#F0B86E",
-      dataUnit: "%",
-      yMin: 0,
-      yMax: 100,
-    },
-    {
-      dataKey: "light_intensity",
-      color: "#836096",
-      dataUnit: "Lux",
-      yMin: 100,
-      yMax: 1000,
-    },
-    {
-      dataKey: "pH",
-      color: "#33AC57",
-      yMin: 0.0,
-      yMax: 10.0,
-    },
-    // { dataKey: "dataKey5", color: "#33FF57", dataUnit: "Unit5" },
-    // { dataKey: "dataKey6", color: "#5733FF", dataUnit: "Unit6" },
-    // { dataKey: "dataKey7", color: "#FF33B8", dataUnit: "Unit7" },
-    // { dataKey: "dataKey8", color: "#33B8FF", dataUnit: "Unit8" },
-    // { dataKey: "dataKey8", color: "#33B8AA", dataUnit: "Unit9" },
-  ];
+  const totalCharts = keys.length;
+  const filteredDataConfig = dataConfig.filter((config) =>
+    keys.includes(config.dataKey)
+  );
+  const chartsToRender = expanded
+    ? filteredDataConfig
+    : filteredDataConfig.slice(0, 4);
 
-  const totalCharts = initialData.length;
-  const chartsToRender = expanded ? initialData : initialData.slice(0, 4);
+  const { mutate: mutateDeleteKey } = useCustomMutation<TSKey>();
+  const { open: openNotification } = useNotification();
+
+  const handleDeleteKey = (data: TSKey) => {
+    const ts_key = data.ts_key;
+    mutateDeleteKey(
+      {
+        values: "",
+        url: `${apiUrl}/assets/${asset_id}/keys/${data.ts_key}`,
+        method: "delete",
+      },
+      {
+        onError: (error, variables, context) => {
+          console.log("Error Deleting Threshold: ", error);
+        },
+        onSuccess: (data, variables, context) => {
+          queryClient.invalidateQueries({
+            queryKey: [`${asset_id}_chart_keys`],
+          });
+          openNotification?.({
+            type: "success",
+            message: `Successfully deleted key: ${ts_key}`,
+          });
+        },
+      }
+    );
+  };
+
+  const keyColumns = React.useMemo<GridColDef<TSKey>[]>(
+    () => [
+      {
+        field: "ts_key",
+        headerName: "Key",
+        flex: 1,
+      },
+      {
+        field: "actions",
+        headerName: "Action",
+        type: "actions",
+        getActions: function render({ row }) {
+          return [
+            <IconButton onClick={() => handleDeleteKey(row)}>
+              <Delete />
+            </IconButton>,
+          ];
+        },
+      },
+    ],
+    []
+  );
 
   return (
     <Stack>
@@ -86,6 +166,11 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
         >
           <Typography variant="h6">{name}</Typography>
         </Link>
+        {chartsToRender.length === 0 && (
+          <Typography variant="subtitle1" mb={3}>
+            Start sending data to see line charts
+          </Typography>
+        )}
         <Grid container spacing={2} columns={16}>
           {chartsToRender.map((data, index) => (
             <Grid
@@ -101,9 +186,10 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
                 asset_id={asset_id}
                 color={data.color}
                 dataKey={data.dataKey}
-                dataUnit={data.dataUnit}
+                dataUnit={data.dataUnit || ""}
                 yMin={data.yMin || 0}
                 yMax={data.yMax || 100}
+                mqttData={mqttData}
               />
             </Grid>
           ))}
@@ -133,6 +219,15 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
               onClick={() => setThresholdDialogOpen(true)}
             >
               Thresholds
+            </Button>
+          </CustomTooltip>
+          <CustomTooltip title="Keys">
+            <Button
+              variant="contained"
+              sx={{ bgcolor: "#96E9C6" }}
+              onClick={() => setKeyDialogOpen(true)}
+            >
+              Keys
             </Button>
           </CustomTooltip>
           <CustomTooltip title="Send Control Command">
@@ -210,6 +305,28 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
             width="100%"
             height="auto"
             src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDUzYWZsMW9ta3VpYnY4eDJxZ3d5eHB4dmZzcHRzZnVjazZuczhjMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fMJDsRF41tKWi42K3T/giphy.gif"
+          />
+        </Box>
+      </Dialog>
+      <Dialog open={keyDialogOpen} onClose={() => setKeyDialogOpen(false)}>
+        <DialogTitle fontWeight={700}>Asset Keys</DialogTitle>
+        <Box p={3}>
+          <Typography variant="subtitle1">
+            Sending timeseries with new data key will add to this table
+          </Typography>
+          <DataGrid
+            rows={(keyData?.data || []) as readonly TSKey[]}
+            getRowId={(row) => row.ts_key}
+            columns={keyColumns}
+            autoHeight
+            disableRowSelectionOnClick
+            pageSizeOptions={[10, 25, 50]}
+            density="standard"
+            sx={{
+              "& .MuiDataGrid-cell:hover": {
+                cursor: "pointer",
+              },
+            }}
           />
         </Box>
       </Dialog>

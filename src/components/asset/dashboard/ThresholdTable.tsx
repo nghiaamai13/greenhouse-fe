@@ -45,7 +45,7 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
       url: `${apiUrl}/assets/${asset_id}/thresholds`,
       method: "get",
       queryOptions: {
-        queryKey: ["asset_thresholds"],
+        queryKey: [`${asset_id}_thresholds`],
       },
     });
 
@@ -120,7 +120,9 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
           console.log("Error Adding Threshold: ", error);
         },
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["asset_thresholds"] });
+          queryClient.invalidateQueries({
+            queryKey: [`${asset_id}_thresholds`],
+          });
           queryClient.invalidateQueries({
             queryKey: [`${asset_id}_thresholds_${data.key}`],
           });
@@ -147,7 +149,9 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
           console.log("Error Deleting Threshold: ", error);
         },
         onSuccess: (data, variables, context) => {
-          queryClient.invalidateQueries({ queryKey: ["asset_thresholds"] });
+          queryClient.invalidateQueries({
+            queryKey: [`${asset_id}_thresholds_${key}`],
+          });
           openNotification?.({
             type: "success",
             message: `Successfully deleted threshold for ${key}`,

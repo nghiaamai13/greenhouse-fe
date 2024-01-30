@@ -73,6 +73,14 @@ export const FarmList: React.FC<IResourceComponentsProps> = () => {
     filters: {
       mode: "off",
     },
+    sorters: {
+      initial: [
+        {
+          field: "created_at",
+          order: "desc",
+        },
+      ],
+    },
   });
 
   const columns = React.useMemo<GridColDef<IFarm>[]>(

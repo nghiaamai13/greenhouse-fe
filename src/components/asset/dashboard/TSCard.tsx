@@ -7,44 +7,24 @@ import { darken } from "@mui/material";
 import mqtt from "mqtt";
 import moment from "moment";
 import { Box } from "@mui/system";
-import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
 
-const TSCard: React.FC<StreamProps> = ({
-  asset_id,
-  dataKey,
-  dataUnit,
-  color,
-}) => {
-  const mqtt_topic = `assets/${asset_id}/telemetry`;
-  const [cardValue, setCardValue] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<moment.Moment | null>(null);
+const TSCard: React.FC<
+  StreamProps & { cardValue: number | null; lastUpdated: moment.Moment | null }
+> = ({ dataKey, dataUnit, color, cardValue, lastUpdated }) => {
+  const [formattedLastUpdated, setFormattedLastUpdated] = useState<
+    string | null
+  >(lastUpdated?.fromNow() || "Not Updated");
 
+  // Update the last updated time every second
   useEffect(() => {
-    const client = mqtt.connect(
-      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
-    );
-
-    client.on("connect", () => {
-      console.log("Connected to MQTT broker");
-      client.subscribe(mqtt_topic);
-    });
-
-    client.on("message", (topic, message) => {
-      console.log(`Received message on topic ${topic}: ${message.toString()}`);
-      const newValue = JSON.parse(message.toString())[dataKey];
-      if (newValue) {
-        setCardValue(newValue);
-        setLastUpdated(moment());
-      }
-    });
+    const intervalId = setInterval(() => {
+      setFormattedLastUpdated(lastUpdated?.fromNow() || "Not Updated");
+    }, 1000);
 
     return () => {
-      if (client.connected) {
-        client.unsubscribe(mqtt_topic);
-        client.end();
-      }
+      clearInterval(intervalId);
     };
-  }, [mqtt_topic]);
+  }, [lastUpdated]);
 
   return (
     <Card
@@ -74,7 +54,8 @@ const TSCard: React.FC<StreamProps> = ({
       >
         <Box mb={5}>
           <Typography variant="h6" component="div" fontWeight={"bold"}>
-            {dataKey.charAt(0).toUpperCase() + dataKey.slice(1)}
+            {dataKey.charAt(0).toUpperCase() +
+              dataKey.slice(1).replace("_", " ")}
           </Typography>
           {cardValue === null ? (
             <Typography mt={"20px"}>No Data</Typography>
@@ -92,7 +73,7 @@ const TSCard: React.FC<StreamProps> = ({
         {lastUpdated ? (
           <Typography variant="subtitle2" component="div" mt={"auto"}>
             Last Updated <br />
-            {lastUpdated.fromNow()}
+            {formattedLastUpdated}
           </Typography>
         ) : (
           <Typography variant="subtitle2" component="div" mt={"auto"}>

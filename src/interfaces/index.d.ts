@@ -95,6 +95,10 @@ export interface IDeviceControl {
   json_data: string;
 }
 
+export interface TSKey {
+  ts_key: string;
+}
+
 export type Nullable<T> = {
   [P in keyof T]: T[P] | null;
 };

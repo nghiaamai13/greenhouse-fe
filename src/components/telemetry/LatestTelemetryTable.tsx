@@ -26,7 +26,7 @@ const LatestTelemetryTable: React.FC<LatestTelemetryTableProps> = ({
       url: `${apiUrl}/${entity_type}/${entity_id}/telemetry/latest`,
       method: "get",
       queryOptions: {
-        queryKey: ["latest_telemetry"],
+        queryKey: [`${entity_id}_latest_telemetry`],
       },
     });
 
@@ -85,7 +85,9 @@ const LatestTelemetryTable: React.FC<LatestTelemetryTableProps> = ({
       console.log(`Received message on topic ${topic}: ${message.toString()}`);
       const newValue = JSON.parse(message.toString());
       if (newValue) {
-        queryClient.invalidateQueries({ queryKey: ["latest_telemetry"] });
+        queryClient.invalidateQueries({
+          queryKey: [`${entity_id}_latest_telemetry`],
+        });
       } else {
         return;
       }

@@ -192,9 +192,6 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
 
               <TabPanel value="3">
                 <Stack direction="column" sx={{ flex: 1 }}>
-                  <Typography variant="h6" fontWeight={"bold"}>
-                    Entities
-                  </Typography>
                   <Grid container spacing={3}>
                     <Grid item xs={4}>
                       <AssetTable

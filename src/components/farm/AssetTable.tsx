@@ -3,7 +3,7 @@ import { IAsset, IDevice } from "../../interfaces";
 import { Alert, Box, IconButton, Typography } from "@mui/material";
 import React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { DateField } from "@refinedev/mui";
+import { CreateButton, DateField } from "@refinedev/mui";
 import { Delete } from "@mui/icons-material";
 
 type farmComponentProps = {
@@ -12,13 +12,10 @@ type farmComponentProps = {
 
 const AssetTable: React.FC<farmComponentProps> = ({ farm_id }) => {
   const apiUrl = useApiUrl();
-  const { show } = useNavigation();
+  const { show, list } = useNavigation();
   const { data, isLoading } = useCustom<IAsset[]>({
     url: `${apiUrl}/farms/${farm_id}/assets`,
     method: "get",
-    queryOptions: {
-      queryKey: ["farm_assets"],
-    },
   });
 
   const columns = React.useMemo<GridColDef<IAsset>[]>(
@@ -64,10 +61,20 @@ const AssetTable: React.FC<farmComponentProps> = ({ farm_id }) => {
   return farm_id == "" ? (
     <Alert severity="error">Failed to parse farm data</Alert>
   ) : (
-    <Box my={2}>
-      <Typography variant="body1" fontWeight={600}>
-        Assets
-      </Typography>
+    <Box mt={2}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+        <Typography variant="body1" fontWeight={600}>
+          Assets
+        </Typography>
+        <CreateButton
+          variant="contained"
+          color="primary"
+          onClick={() => list("assets")}
+        >
+          Create
+        </CreateButton>
+      </Box>
+
       <DataGrid
         columns={columns}
         rows={data?.data || ([] as readonly IAsset[])}
@@ -76,6 +83,9 @@ const AssetTable: React.FC<farmComponentProps> = ({ farm_id }) => {
         autoHeight
         initialState={{
           pagination: { paginationModel: { pageSize: 5 } },
+          sorting: {
+            sortModel: [{ field: "created_at", sort: "desc" }],
+          },
         }}
         pageSizeOptions={[5, 10, 25]}
         density="comfortable"

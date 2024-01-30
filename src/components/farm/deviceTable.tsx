@@ -1,9 +1,9 @@
 import { useApiUrl, useCustom, useNavigation } from "@refinedev/core";
 import { IDevice } from "../../interfaces";
-import { Alert, Box, IconButton, Typography } from "@mui/material";
+import { Alert, Box, Button, IconButton, Typography } from "@mui/material";
 import React from "react";
 import { DataGrid, GridActionsCellItem, GridColDef } from "@mui/x-data-grid";
-import { DateField, useDataGrid } from "@refinedev/mui";
+import { CreateButton, DateField, useDataGrid } from "@refinedev/mui";
 import { Delete } from "@mui/icons-material";
 
 type farmComponentProps = {
@@ -12,13 +12,10 @@ type farmComponentProps = {
 
 const DeviceTable: React.FC<farmComponentProps> = ({ farm_id }) => {
   const apiUrl = useApiUrl();
-  const { show } = useNavigation();
+  const { show, list } = useNavigation();
   const { data, isLoading } = useCustom<IDevice[]>({
     url: `${apiUrl}/farms/${farm_id}/devices`,
     method: "get",
-    queryOptions: {
-      queryKey: ["farm_devices"],
-    },
   });
 
   const columns = React.useMemo<GridColDef<IDevice>[]>(
@@ -86,10 +83,20 @@ const DeviceTable: React.FC<farmComponentProps> = ({ farm_id }) => {
   return farm_id == "" ? (
     <Alert severity="error">Failed to parse farm data</Alert>
   ) : (
-    <Box my={2}>
-      <Typography variant="body1" fontWeight={600}>
-        Devices
-      </Typography>
+    <Box mt={2}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Typography variant="body1" fontWeight={600}>
+          Devices
+        </Typography>
+        <CreateButton
+          variant="contained"
+          color="primary"
+          onClick={() => list("devices")}
+        >
+          Create
+        </CreateButton>
+      </Box>
+
       <DataGrid
         columns={columns}
         rows={data?.data || ([] as readonly IDevice[])}
@@ -98,6 +105,9 @@ const DeviceTable: React.FC<farmComponentProps> = ({ farm_id }) => {
         autoHeight
         initialState={{
           pagination: { paginationModel: { pageSize: 5 } },
+          sorting: {
+            sortModel: [{ field: "created_at", sort: "desc" }],
+          },
         }}
         pageSizeOptions={[5, 10, 25]}
         density="comfortable"

@@ -15,6 +15,7 @@ Chart.register(StreamingPlugin);
 interface TSLineChartProps extends StreamProps {
   yMin?: number;
   yMax?: number;
+  mqttData: { [key: string]: number };
 }
 
 export const TSLineChart: React.FC<TSLineChartProps> = ({
@@ -24,6 +25,7 @@ export const TSLineChart: React.FC<TSLineChartProps> = ({
   dataUnit,
   yMin = 0,
   yMax = 100,
+  mqttData,
 }) => {
   const mqtt_topic = `assets/${asset_id}/telemetry`;
   const apiUrl = useApiUrl();
@@ -36,34 +38,47 @@ export const TSLineChart: React.FC<TSLineChartProps> = ({
       },
     });
 
+  //const [chartData, setChartData] = useState<{ x: number; y: any }[]>([]);
+
   const [chartData, setChartData] = useState<{ x: number; y: any }[]>([]);
 
   useEffect(() => {
-    const client = mqtt.connect(
-      `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
-    );
+    const newData =
+      mqttData[dataKey] !== undefined
+        ? { x: Date.now(), y: mqttData[dataKey] }
+        : null;
 
-    client.on("connect", () => {
-      console.log("Connected to MQTT broker");
-      client.subscribe(mqtt_topic);
-    });
-
-    client.on("message", (topic, message) => {
-      console.log(`Received message on topic ${topic}: ${message.toString()}`);
-      const newData = {
-        x: Date.now(),
-        y: JSON.parse(message.toString())[dataKey],
-      };
+    if (newData) {
       setChartData((prevData) => [...prevData, newData]);
-    });
+    }
+  }, [mqttData, dataKey]);
 
-    return () => {
-      if (client.connected) {
-        client.unsubscribe(mqtt_topic);
-        client.end();
-      }
-    };
-  }, [mqtt_topic]);
+  // useEffect(() => {
+  //   const client = mqtt.connect(
+  //     `mqtt://${MQTT_BROKER_ADDRESS}:${MQTT_WS_PORT}`
+  //   );
+
+  //   client.on("connect", () => {
+  //     console.log("Connected to MQTT broker");
+  //     client.subscribe(mqtt_topic);
+  //   });
+
+  //   client.on("message", (topic, message) => {
+  //     console.log(`Received message on topic ${topic}: ${message.toString()}`);
+  //     const newData = {
+  //       x: Date.now(),
+  //       y: JSON.parse(message.toString())[dataKey],
+  //     };
+  //     setChartData((prevData) => [...prevData, newData]);
+  //   });
+
+  //   return () => {
+  //     if (client.connected) {
+  //       client.unsubscribe(mqtt_topic);
+  //       client.end();
+  //     }
+  //   };
+  // }, [mqtt_topic]);
 
   const getLineColor = () => {
     if (
@@ -80,9 +95,6 @@ export const TSLineChart: React.FC<TSLineChartProps> = ({
       (chartData[chartData.length - 1].y > threshold.threshold_max ||
         chartData[chartData.length - 1].y < threshold.threshold_min)
     ) {
-      console.log(
-        "ECEEDED THRESHOLD" + threshold.threshold_max + threshold.threshold_min
-      );
       return "red";
     } else {
       return color;
@@ -125,7 +137,8 @@ export const TSLineChart: React.FC<TSLineChartProps> = ({
           color={getLineColor()}
         >
           Max: {dataKeyThreshold?.data?.threshold_max}, Min:{" "}
-          {dataKeyThreshold?.data?.threshold_min}
+          {dataKeyThreshold?.data?.threshold_min}, Latest Value:{" "}
+          {mqttData[dataKey] ? mqttData[dataKey] : "N/A"}
         </Typography>
       ) : (
         <Typography
@@ -133,7 +146,8 @@ export const TSLineChart: React.FC<TSLineChartProps> = ({
           textAlign={"center"}
           color="text.secondary"
         >
-          Threshold Unset
+          Threshold Unset, Latest Value:{" "}
+          {mqttData[dataKey] ? mqttData[dataKey] : "N/A"}
         </Typography>
       )}
     </Box>
