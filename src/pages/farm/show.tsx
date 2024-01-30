@@ -24,7 +24,7 @@ import { IAsset, IFarm } from "../../interfaces";
 import { Breadcrumb, Show } from "@refinedev/mui";
 import OutdoorField from "../../components/asset/dashboard/OutdoorField";
 import Greenhouse from "../../components/asset/dashboard/Greenhouse";
-import DeviceTable from "../../components/farm/DeviceTable";
+// import DeviceTable from "../../components/farm/DeviceTable";
 import AssetTable from "../../components/farm/AssetTable";
 import LocationPicker from "../../components/farm/LocationPicker";
 import { CustomTooltip } from "../../components";
@@ -199,9 +199,9 @@ export const FarmShow: React.FC<IResourceComponentsProps> = () => {
                       />
                     </Grid>
                     <Grid item xs={8}>
-                      <DeviceTable
+                      {/* <DeviceTable
                         farm_id={farm_data ? farm_data.farm_id : ""}
-                      />
+                      /> */}
                     </Grid>
                   </Grid>
                 </Stack>
