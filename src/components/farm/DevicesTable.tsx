@@ -10,7 +10,7 @@ type farmComponentProps = {
   farm_id: string;
 };
 
-const DeviceTable: React.FC<farmComponentProps> = ({ farm_id }) => {
+const DevicesTable: React.FC<farmComponentProps> = ({ farm_id }) => {
   const apiUrl = useApiUrl();
   const { show, list } = useNavigation();
   const { data, isLoading } = useCustom<IDevice[]>({
@@ -122,4 +122,4 @@ const DeviceTable: React.FC<farmComponentProps> = ({ farm_id }) => {
   );
 };
 
-export default DeviceTable;
+export default DevicesTable;
