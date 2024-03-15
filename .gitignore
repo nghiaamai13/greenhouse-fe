@@ -28,3 +28,4 @@ pyvenv.cfg
 .env
 .env
 .env
+*.code-workspace

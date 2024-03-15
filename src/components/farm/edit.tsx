@@ -113,6 +113,7 @@ export const EditFarm: React.FC<
                         },
                       })}
                       defaultValue={getValues("location.0")}
+                      value={getValues("location.0")}
                       error={!!errors.location?.[0]}
                       helperText={errors.location?.[0]?.message}
                       label="Latitude"
@@ -127,6 +128,7 @@ export const EditFarm: React.FC<
                         },
                       })}
                       defaultValue={getValues("location.1")}
+                      value={getValues("location.1")}
                       error={!!errors.location?.[1]}
                       helperText={errors.location?.[1]?.message}
                       label="Longitude"

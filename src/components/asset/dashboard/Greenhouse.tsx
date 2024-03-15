@@ -32,6 +32,7 @@ import { TSKey } from "../../../interfaces";
 import { useQueryClient } from "@tanstack/react-query";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { tsDataConfig as dataConfig } from "../../../constant";
+import CameraSourceTable from "./CameraSourceTable";
 
 interface GreenhouseProps {
   asset_id: string;
@@ -42,7 +43,7 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
   const { show } = useNavigation();
   const [thresholdDialogOpen, setThresholdDialogOpen] = useState(false);
   const [controlDialogOpen, setControlDialogOpen] = useState(false);
-  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+  const [cameraListDialogOpen, setCameraListDialogOpen] = useState(false);
   const [keyDialogOpen, setKeyDialogOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const queryClient = useQueryClient();
@@ -243,7 +244,7 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
             <Button
               variant="contained"
               color="info"
-              onClick={() => setCameraDialogOpen(true)}
+              onClick={() => setCameraListDialogOpen(true)}
             >
               Camera
             </Button>
@@ -284,13 +285,14 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
       />
 
       <Dialog
-        open={cameraDialogOpen}
-        onClose={() => setCameraDialogOpen(false)}
+        open={cameraListDialogOpen}
+        onClose={() => setCameraListDialogOpen(false)}
+        PaperProps={{ sx: { minWidth: "1000px" } }}
       >
         <DialogTitle fontWeight={700}>Camera View</DialogTitle>
         <IconButton
           aria-label="close"
-          onClick={() => setCameraDialogOpen(false)}
+          onClick={() => setCameraListDialogOpen(false)}
           sx={{
             position: "absolute",
             right: 8,
@@ -300,12 +302,19 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
         >
           <CloseIcon />
         </IconButton>
-        <Box p={3}>
-          <img
-            width="100%"
-            height="auto"
-            src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDUzYWZsMW9ta3VpYnY4eDJxZ3d5eHB4dmZzcHRzZnVjazZuczhjMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fMJDsRF41tKWi42K3T/giphy.gif"
-          />
+        {/* <Box p={3}>
+          <iframe
+            width="640"
+            height="480"
+            src="http://14.161.31.172:81/asp/video.cgi"
+            allowFullScreen
+          ></iframe>
+        </Box> */}
+        <Box px={3} py={2}>
+          <Typography variant="body1" fontWeight={600} fontSize={19} mb={2}>
+            {name} Camera Sources
+          </Typography>
+          <CameraSourceTable asset_id={asset_id} />
         </Box>
       </Dialog>
       <Dialog open={keyDialogOpen} onClose={() => setKeyDialogOpen(false)}>

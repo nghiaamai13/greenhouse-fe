@@ -82,6 +82,20 @@ export interface IThresholdAdd {
   threshold_max: number;
   threshold_min: number;
 }
+
+export interface ICameraSource {
+  asset_id: string;
+  camera_source_id: string;
+  camera_source_name: string;
+  url: string;
+  created_at: string;
+}
+
+export interface ICameraSourceAdd {
+  camera_source_name: string;
+  url: string;
+}
+
 export interface ITelemetry {
   key: string;
   value: number;

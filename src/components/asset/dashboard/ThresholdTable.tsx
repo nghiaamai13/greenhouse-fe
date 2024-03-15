@@ -248,7 +248,7 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
                   )}
                 ></Controller>
               </FormControl>
-              <FormControl sx={{ mb: 3 }}>
+              <FormControl>
                 <TextField
                   id="min_value"
                   {...register("threshold_min", {
@@ -266,25 +266,25 @@ const ThresholdTable: React.FC<ThresholdTableProps> = ({ asset_id }) => {
                   name="threshold_min"
                   autoFocus
                 />
-                <FormControl sx={{ mb: 1 }}>
-                  <TextField
-                    id="max_value"
-                    {...register("threshold_max", {
-                      required: "This field is required",
-                      pattern: {
-                        value: /^-?\d+(\.\d+)?$/,
-                        message: "Please enter a valid number",
-                      },
-                    })}
-                    error={!!errors.threshold_max}
-                    helperText={errors.threshold_max?.message}
-                    margin="normal"
-                    fullWidth
-                    label="Max Value"
-                    name="threshold_max"
-                    autoFocus
-                  />
-                </FormControl>
+              </FormControl>
+              <FormControl sx={{ mb: 1 }}>
+                <TextField
+                  id="max_value"
+                  {...register("threshold_max", {
+                    required: "This field is required",
+                    pattern: {
+                      value: /^-?\d+(\.\d+)?$/,
+                      message: "Please enter a valid number",
+                    },
+                  })}
+                  error={!!errors.threshold_max}
+                  helperText={errors.threshold_max?.message}
+                  margin="normal"
+                  fullWidth
+                  label="Max Value"
+                  name="threshold_max"
+                  autoFocus
+                />
               </FormControl>
             </Stack>
             <Button type="submit" variant="contained">
