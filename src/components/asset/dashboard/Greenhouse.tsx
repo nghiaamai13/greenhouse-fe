@@ -28,11 +28,12 @@ import {
 } from "@refinedev/core";
 import mqtt from "mqtt";
 import { MQTT_BROKER_ADDRESS, MQTT_WS_PORT } from "../../../constant";
-import { TSKey } from "../../../interfaces";
+import { ICameraSource, TSKey } from "../../../interfaces";
 import { useQueryClient } from "@tanstack/react-query";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { tsDataConfig as dataConfig } from "../../../constant";
 import CameraSourceTable from "./CameraSourceTable";
+import CameraView from "./CameraView";
 
 interface GreenhouseProps {
   asset_id: string;
@@ -58,6 +59,15 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
       queryKey: [`${asset_id}_chart_keys`],
     },
   });
+
+  const { data: cameras_data, isLoading: cameraDataIsLoading } =
+    useCustom<ICameraSource>({
+      url: `${apiUrl}/assets/${asset_id}/cameras`,
+      method: "get",
+      queryOptions: {
+        queryKey: [`${asset_id}_cameras`],
+      },
+    });
 
   const keys: string[] = keyData?.data.map((data) => data.ts_key) || [];
 
@@ -167,6 +177,9 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
         >
           <Typography variant="h6">{name}</Typography>
         </Link>
+        <Typography variant="body1" sx={{ fontWeight: "bold", my: 3 }}>
+          Line Charts
+        </Typography>
         {chartsToRender.length === 0 && (
           <Typography variant="subtitle1" mb={3}>
             Start sending data to see line charts
@@ -211,6 +224,26 @@ const Greenhouse: React.FC<GreenhouseProps> = ({ asset_id, name }) => {
             </IconButton>
           </Stack>
         )}
+
+        <Typography variant="body1" sx={{ fontWeight: "bold", my: 3 }}>
+          Camera Sources
+        </Typography>
+        <div style={{ width: 1800, whiteSpace: "nowrap" }}>
+          <Box component="div" sx={{ overflow: "auto" }} maxWidth={1800}>
+            <Stack direction="row" mb={3} spacing={3}>
+              {/*@ts-ignore*/}
+              {cameras_data?.data.map(
+                (camera: ICameraSource, index: number) => (
+                  <CameraView
+                    key={index}
+                    cameraName={camera.camera_source_name}
+                    url={camera.url}
+                  />
+                )
+              )}
+            </Stack>
+          </Box>
+        </div>
 
         <Stack direction={"row"} sx={{ flex: 1, gap: "10px" }}>
           <CustomTooltip title="Set Thresholds">

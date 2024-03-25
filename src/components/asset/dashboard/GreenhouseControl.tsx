@@ -40,7 +40,7 @@ const controlTemplates: GreenhouseAction[] = [
     id: 2,
     name: "Turn Off",
     payload: {
-      off: true,
+      on: false,
     },
   },
 ];
@@ -65,6 +65,11 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
     setValue,
     reset,
   } = useForm<IDeviceControl, HttpError, Nullable<IDeviceControl>>();
+
+  const [showJsonField, setShowJsonField] = useState(false);
+  const toggleJsonField = () => {
+    setShowJsonField(!showJsonField);
+  };
 
   const { data: assetDeviceData, isLoading: keyIsLoading } = useCustom({
     url: `${apiUrl}/assets/${asset_id}/devices`,
@@ -91,12 +96,28 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
       type: "success",
       message: "Control sent successfully",
     });
+
+    console.log("Control Sent to Topic: ", controlTopic, "Payload: ", data);
   };
 
-  const handleAutocompleteChange = (_: any, value: GreenhouseAction | null) => {
+  const handleDeviceAutocompleteChange = (_: any, value: IDevice | null) => {
+    const deviceID = getValues("device_id");
     const currentJsonData = JSON.parse(getValues("json_data") || "{}");
     const { duration } = currentJsonData;
     const newJsonValue = {
+      deviceId: deviceID,
+      ...currentJsonData,
+    };
+
+    setValue("json_data", JSON.stringify(newJsonValue));
+  };
+
+  const handleAutocompleteChange = (_: any, value: GreenhouseAction | null) => {
+    const deviceId = getValues("device_id");
+    const currentJsonData = JSON.parse(getValues("json_data") || "{}");
+    const { duration } = currentJsonData;
+    const newJsonValue = {
+      deviceId: deviceId,
       ...(value ? value.payload : {}),
       ...(duration !== undefined ? { duration } : {}),
     };
@@ -155,6 +176,7 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
                     }
                     onChange={(_, value) => {
                       field.onChange(value?.device_id);
+                      handleDeviceAutocompleteChange(_, value);
                     }}
                     isOptionEqualToValue={(option, value) =>
                       value === undefined ||
@@ -204,76 +226,83 @@ const GreenhouseControlDialog: React.FC<GreenhouseControlDialogProps> = ({
               helperText="Provide the action and duration in seconds to fill the json data"
             />
 
-            <FormControl sx={{ mb: 2 }}>
-              <Controller
-                name="json_data"
-                control={control}
-                defaultValue=""
-                rules={{
-                  validate: (value) => {
-                    try {
-                      JSON.parse(value);
-                      return true;
-                    } catch (error) {
-                      return "Invalid JSON format";
-                    }
-                  },
-                }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    {...register("json_data", {
-                      required: "This field is required",
-                    })}
-                    error={!!errors.json_data}
-                    helperText={errors.json_data?.message}
-                    multiline
-                    focused
-                    placeholder="This data will be sent to the device"
-                    rows={8}
-                    margin="normal"
-                    fullWidth
-                    label="JSON Data"
-                    autoFocus
-                    required
-                    InputProps={{
-                      endAdornment: (
-                        <Stack
-                          direction={"row"}
-                          sx={{
-                            flex: 1,
-                            position: "absolute",
-                            m: "7px",
-                            top: 0,
-                            right: 0,
-                          }}
-                        >
-                          <IconButton
-                            onClick={() => {
-                              const prettifiedJson = JSON.stringify(
-                                JSON.parse(field.value),
-                                null,
-                                2
-                              );
-                              setValue("json_data", prettifiedJson);
+            <Button onClick={toggleJsonField} variant="contained" color="info">
+              {showJsonField ? "Hide Editor" : "Open Editor"}
+            </Button>
+
+            {showJsonField && (
+              <FormControl sx={{ mb: 2 }}>
+                <Controller
+                  name="json_data"
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    validate: (value) => {
+                      try {
+                        JSON.parse(value);
+                        return true;
+                      } catch (error) {
+                        return "Invalid JSON format";
+                      }
+                    },
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      {...register("json_data", {
+                        required: "This field is required",
+                      })}
+                      error={!!errors.json_data}
+                      helperText="The data in this editor will be sent to the device"
+                      variant="outlined"
+                      multiline
+                      focused
+                      placeholder="This data will be sent to the device"
+                      rows={8}
+                      margin="normal"
+                      fullWidth
+                      label="JSON Data"
+                      autoFocus
+                      required
+                      InputProps={{
+                        endAdornment: (
+                          <Stack
+                            direction={"row"}
+                            sx={{
+                              flex: 1,
+                              position: "absolute",
+                              m: "7px",
+                              top: 0,
+                              right: 0,
                             }}
                           >
-                            <FormatAlignLeft />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => {
-                              setValue("json_data", "");
-                            }}
-                          >
-                            <Close />
-                          </IconButton>
-                        </Stack>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </FormControl>
+                            <IconButton
+                              onClick={() => {
+                                const prettifiedJson = JSON.stringify(
+                                  JSON.parse(field.value),
+                                  null,
+                                  2
+                                );
+                                setValue("json_data", prettifiedJson);
+                              }}
+                            >
+                              <FormatAlignLeft />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => {
+                                setValue("json_data", "");
+                              }}
+                            >
+                              <Close />
+                            </IconButton>
+                          </Stack>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+            )}
             <Button type="submit" variant="contained">
               Send
             </Button>
